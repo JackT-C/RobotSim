@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ImageView fitHeight="1081.0" fitWidth="1921.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Images/RobotSimHeader.png" />
+         </image>
+      </ImageView>
+      <Button fx:id="FileButton" layoutX="111.0" layoutY="70.0" mnemonicParsing="false" prefHeight="147.0" prefWidth="120.0" text="FileButton" visible="false" />
+      <Button fx:id="QuestionButton" layoutX="303.0" layoutY="70.0" mnemonicParsing="false" prefHeight="143.0" prefWidth="110.0" text="HelpButton" visible="false" />
+      <Button fx:id="startsimbutton" layoutX="1525.0" layoutY="70.0" mnemonicParsing="false" prefHeight="147.0" prefWidth="140.0" text="StartButton" visible="false" />
+      <Button fx:id="stopsimButton" layoutX="1710.0" layoutY="70.0" mnemonicParsing="false" prefHeight="139.0" prefWidth="126.0" text="StopButton" visible="false" />
+      <Button layoutX="1785.0" layoutY="7.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="43.0" text="Minimise Button" visible="false" />
+      <Button layoutX="1875.0" layoutY="7.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="43.0" text="CloseButton" visible="false" />
+      <Button layoutX="1830.0" layoutY="7.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="43.0" text="Fullscreen Button" visible="false" />
+   </children>
+</AnchorPane>
