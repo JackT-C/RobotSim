@@ -5,19 +5,19 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.robotsim.ApplicationMenuController" fx:id="mainPane">
    <children>
-      <ImageView fitHeight="1081.0" fitWidth="1921.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fitHeight="1081.0" fitWidth="1921.0" pickOnBounds="true" preserveRatio="true" fx:id="backgroundImage">
          <image>
             <Image url="@../../../Images/RobotSimHeader.png" />
          </image>
       </ImageView>
-      <Button fx:id="FileButton" layoutX="111.0" layoutY="70.0" mnemonicParsing="false" prefHeight="147.0" prefWidth="120.0" text="FileButton" visible="false" />
-      <Button fx:id="QuestionButton" layoutX="303.0" layoutY="70.0" mnemonicParsing="false" prefHeight="143.0" prefWidth="110.0" text="HelpButton" visible="false" />
-      <Button fx:id="startsimbutton" layoutX="1525.0" layoutY="70.0" mnemonicParsing="false" prefHeight="147.0" prefWidth="140.0" text="StartButton" visible="false" />
-      <Button fx:id="stopsimButton" layoutX="1710.0" layoutY="70.0" mnemonicParsing="false" prefHeight="139.0" prefWidth="126.0" text="StopButton" visible="false" />
-      <Button layoutX="1785.0" layoutY="7.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="43.0" text="Minimise Button" visible="false" />
-      <Button layoutX="1875.0" layoutY="7.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="43.0" text="CloseButton" visible="false" />
-      <Button layoutX="1830.0" layoutY="7.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="43.0" text="Fullscreen Button" visible="false" />
+      <Button fx:id="FileButton" layoutX="111.0" layoutY="70.0" mnemonicParsing="false" onAction="#showFileAlert" opacity="0.0" prefHeight="147.0" prefWidth="120.0" text="FileButton" />
+      <Button fx:id="QuestionButton" layoutX="303.0" layoutY="70.0" mnemonicParsing="false" onAction="#showHelp" opacity="0.0" prefHeight="143.0" prefWidth="110.0" text="HelpButton" />
+      <Button fx:id="startsimbutton" layoutX="1525.0" layoutY="70.0" mnemonicParsing="false" onAction="#startSimulation" opacity="0.0" prefHeight="147.0" prefWidth="140.0" text="StartButton" />
+      <Button fx:id="stopsimButton" layoutX="1710.0" layoutY="70.0" mnemonicParsing="false" onAction="#stopSimulation" opacity="0.0" prefHeight="139.0" prefWidth="126.0" text="StopButton" />
+      <Button fx:id="minimisebutton" layoutX="1785.0" layoutY="7.0" mnemonicParsing="false" onAction="#minimiseWindow" opacity="0.0" prefHeight="17.0" prefWidth="43.0" text="Minimise Button" />
+      <Button fx:id="closebutton" layoutX="1875.0" layoutY="7.0" mnemonicParsing="false" onAction="#closeApplication" opacity="0.0" prefHeight="17.0" prefWidth="43.0" text="CloseButton" />
+      <Button fx:id="fullscreenbutton" layoutX="1830.0" layoutY="7.0" mnemonicParsing="false" onAction="#toggleFullscreen" opacity="0.0" prefHeight="17.0" prefWidth="43.0" text="Fullscreen Button" />
    </children>
 </AnchorPane>
