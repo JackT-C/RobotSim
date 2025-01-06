@@ -18,4 +18,14 @@ public class SceneSwitcher {
             e.printStackTrace();
         }
     }
+    public static void switchToArenaScene(Scene currentScene) {
+        try {
+            FXMLLoader loader = new FXMLLoader(SceneSwitcher.class.getResource("Arena.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) currentScene.getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
 }

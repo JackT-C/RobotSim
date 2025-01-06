@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.robotsim.ArenaController">
+   <children>
+      <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Images/RobotSim.jpg" />
+         </image>
+      </ImageView>
+      <Button fx:id="RemoveObstacle" layoutX="201.0" layoutY="35.0" mnemonicParsing="false" onAction="#removeObstacle" opacity="0.27" prefHeight="81.0" prefWidth="505.0" />
+      <Button fx:id="RemoveRobot" layoutX="717.0" layoutY="35.0" mnemonicParsing="false" onAction="#removeRobot" opacity="0.27" prefHeight="81.0" prefWidth="442.0" />
+      <Button fx:id="AddObstacle" layoutX="1171.0" layoutY="34.0" mnemonicParsing="false" onAction="#addObstacle" opacity="0.27" prefHeight="81.0" prefWidth="394.0" />
+      <Button fx:id="addRobotButton" layoutX="1583.0" layoutY="34.0" mnemonicParsing="false" onAction="#addRobot" opacity="0.27" prefHeight="81.0" prefWidth="320.0" />
+      <Button fx:id="backButton" layoutX="7.0" layoutY="16.0" mnemonicParsing="false" onAction="#goBackToMenu" opacity="0.0" prefHeight="139.0" prefWidth="145.0" />
+      <Button fx:id="fileIcon" layoutX="15.0" layoutY="190.0" mnemonicParsing="false" onAction="#fileAlert" opacity="0.0" prefHeight="139.0" prefWidth="117.0" />
+     <AnchorPane fx:id="arenaPane" layoutX="143.0" layoutY="152.0" prefHeight="928.0" prefWidth="1776.0" />
+   </children>
+</AnchorPane>

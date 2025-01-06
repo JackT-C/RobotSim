@@ -47,32 +47,26 @@ public class ApplicationMenuController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("File Options");
         alert.setHeaderText("Choose an option");
-        alert.setContentText("Do you want to save or load the configuration?");
+        alert.setContentText("Do you want to select save folder or load the configuration?");
 
-        ButtonType saveButton = new ButtonType("Save");
+        ButtonType selectButton = new ButtonType("Select");
         ButtonType loadButton = new ButtonType("Load");
         ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        alert.getButtonTypes().setAll(saveButton, loadButton, cancelButton);
+        alert.getButtonTypes().setAll(selectButton, loadButton, cancelButton);
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent()) {
-            if (result.get() == saveButton) {
-                saveConfiguration();
+            if (result.get() == selectButton) {
+                selectConfiguration();
             } else if (result.get() == loadButton) {
                 loadConfiguration();
             }
         }
     }
 
-    private void saveConfiguration() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Configuration");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Configuration Files", "*.config"));
-        File file = fileChooser.showSaveDialog(mainPane.getScene().getWindow());
-        if (file != null) {
-            // Implement save logic here
-        }
+    private void selectConfiguration() {
+
     }
 
     private void loadConfiguration() {
@@ -93,11 +87,7 @@ public class ApplicationMenuController {
 
     @FXML
     private void startSimulation() {
-        // Logic to start the robot simulation
-    }
-
-    @FXML
-    private void stopSimulation() {
-        // Logic to stop the robot simulation
+        // Switch scene to Sim Page
+        SceneSwitcher.switchToArenaScene(mainPane.getScene());
     }
 }
