@@ -4,6 +4,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Robot extends ImageView {
+    public static double DEFAULT_SIZE = 50;
     private double speed;
     private String name;
 

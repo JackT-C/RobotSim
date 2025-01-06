@@ -1,5 +1,7 @@
 package com.example.robotsim;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,14 +11,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 public class ArenaController {
 
+    private Random random = new Random(); // For generating random positions
     private int robotCount = 0;
     private int obstacleCount = 0;
 
@@ -33,14 +38,57 @@ public class ArenaController {
 
     @FXML
     private void addRobot() {
-        Robot robot = new Robot(200, 200); // Position can be dynamic
+        // Generate random positions within the bounds of the arenaPane
+        double x = random.nextDouble() * (arenaPane.getWidth());
+        double y = random.nextDouble() * (arenaPane.getHeight());
+
+        Robot robot = new Robot(x, y); // Robot positioned randomly
         arenaPane.getChildren().add(robot);
         robotCount++;
         animateRobot(robot);
     }
 
     private void animateRobot(Robot robot) {
-        // Add animation logic for the robot
+        Timeline animation = new Timeline(new KeyFrame(Duration.millis(50), event -> {
+            // Move the robot in a random direction
+            double dx = random.nextDouble() * 80 - 40; // Random delta x (-2 to 2)
+            double dy = random.nextDouble() * 80 - 40; // Random delta y (-2 to 2)
+
+            double newX = robot.getX() + dx;
+            double newY = robot.getY() + dy;
+
+            // Check for collisions with arena boundaries
+            if (newX < 0 || newX + Robot.DEFAULT_SIZE > arenaPane.getWidth()) {
+                dx = -dx;
+            }
+            if (newY < 0 || newY + Robot.DEFAULT_SIZE > arenaPane.getHeight()) {
+                dy = -dy;
+            }
+
+            // Update position
+            robot.setX(robot.getX() + dx);
+            robot.setY(robot.getY() + dy);
+
+            // Check for collisions with other objects
+            detectCollisions(robot);
+        }));
+
+        animation.setCycleCount(Timeline.INDEFINITE);
+        animation.play();
+    }
+
+    private void detectCollisions(Robot robot) {
+        for (var node : arenaPane.getChildren()) {
+            if (node instanceof Obstacle || node instanceof Robot && node != robot) {
+                if (robot.getBoundsInParent().intersects(node.getBoundsInParent())) {
+                    // Handle collision: bounce the robot back
+                    double dx = random.nextDouble() * 40 - 20;
+                    double dy = random.nextDouble() * 40 - 20;
+                    robot.setX(robot.getX() - dx);
+                    robot.setY(robot.getY() - dy);
+                }
+            }
+        }
     }
 
     public void goBackToMenu(ActionEvent event) {
