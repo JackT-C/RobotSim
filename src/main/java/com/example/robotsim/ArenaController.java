@@ -9,21 +9,28 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class ArenaController {
 
-    private Random random = new Random(); // For generating random positions
     private int robotCount = 0;
+    // List to track all robots in the arena
+    private final List<Robot> robots = new ArrayList<>();
     private int obstacleCount = 0;
+
+    @FXML
+    private TextArea robotInfoArea;
 
     @FXML
     private Pane arenaPane;
@@ -38,56 +45,67 @@ public class ArenaController {
 
     @FXML
     private void addRobot() {
-        // Generate random positions within the bounds of the arenaPane
-        double x = random.nextDouble() * (arenaPane.getWidth());
-        double y = random.nextDouble() * (arenaPane.getHeight());
+        // Prompt user to enter robot name
+        TextInputDialog dialog = new TextInputDialog("Robot");
+        dialog.setTitle("Name Your Robot");
+        dialog.setHeaderText("Enter a name for the new robot:");
+        dialog.setContentText("Name:");
 
-        Robot robot = new Robot(x, y); // Robot positioned randomly
-        arenaPane.getChildren().add(robot);
-        robotCount++;
-        animateRobot(robot);
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> {
+            // Ensure robot is placed within valid bounds
+            double x = ThreadLocalRandom.current().nextDouble(50, arenaPane.getWidth() - 50 - Robot.DEFAULT_SIZE);
+            double y = ThreadLocalRandom.current().nextDouble(50, arenaPane.getHeight() - 50 - Robot.DEFAULT_SIZE);
+
+            // Create the robot
+            Robot robot = new Robot(name, x, y);
+
+            // Set behavior for interaction
+            robot.setOnMouseClicked(event -> robot.changeDirection()); // Change direction on click
+
+            // Add to arenaPane
+            arenaPane.getChildren().add(robot);
+
+            // Start animation
+            animateRobot(robot);
+            robots.add(robot);
+            updateRobotInfo(); // Update robot details after adding
+        });
     }
+
 
     private void animateRobot(Robot robot) {
         Timeline animation = new Timeline(new KeyFrame(Duration.millis(50), event -> {
-            // Move the robot in a random direction
-            double dx = random.nextDouble() * 80 - 40; // Random delta x (-2 to 2)
-            double dy = random.nextDouble() * 80 - 40; // Random delta y (-2 to 2)
-
-            double newX = robot.getX() + dx;
-            double newY = robot.getY() + dy;
+            // Update robot's position
+            robot.updatePosition();
 
             // Check for collisions with arena boundaries
-            if (newX < 0 || newX + Robot.DEFAULT_SIZE > arenaPane.getWidth()) {
-                dx = -dx;
+            if (robot.getLayoutX() < 0 || robot.getLayoutX() + Robot.DEFAULT_SIZE > arenaPane.getWidth()) {
+                robot.bounceHorizontally();
             }
-            if (newY < 0 || newY + Robot.DEFAULT_SIZE > arenaPane.getHeight()) {
-                dy = -dy;
+            if (robot.getLayoutY() < 0 || robot.getLayoutY() + Robot.DEFAULT_SIZE > arenaPane.getHeight()) {
+                robot.bounceVertically();
             }
 
-            // Update position
-            robot.setX(robot.getX() + dx);
-            robot.setY(robot.getY() + dy);
-
-            // Check for collisions with other objects
-            detectCollisions(robot);
+            // Update robot information
+            updateRobotInfo();
         }));
 
         animation.setCycleCount(Timeline.INDEFINITE);
         animation.play();
     }
 
-    private void detectCollisions(Robot robot) {
-        for (var node : arenaPane.getChildren()) {
-            if (node instanceof Obstacle || node instanceof Robot && node != robot) {
-                if (robot.getBoundsInParent().intersects(node.getBoundsInParent())) {
-                    // Handle collision: bounce the robot back
-                    double dx = random.nextDouble() * 40 - 20;
-                    double dy = random.nextDouble() * 40 - 20;
-                    robot.setX(robot.getX() - dx);
-                    robot.setY(robot.getY() - dy);
-                }
-            }
+    private void updateRobotInfo() {
+        // Clear the current text
+        robotInfoArea.clear();
+
+        // Add details for each robot
+        for (Robot robot : robots) {
+            String info = String.format("Name: %s, X: %.2f, Y: %.2f\n",
+                    robot.getName(),
+                    robot.getLayoutX(),
+                    robot.getLayoutY());
+            robotInfoArea.appendText(info);
         }
     }
 

@@ -7,7 +7,7 @@ public class Obstacle extends ImageView {
     private String type;
 
     public Obstacle(double x, double y, String imagePath) {
-        super(new Image(imagePath)); // Load custom obstacle image
+        super(new Image("Obstacle1.png")); // Load custom obstacle image
         this.setX(x);
         this.setY(y);
         this.setFitWidth(50); // Set appropriate size
