@@ -179,7 +179,14 @@ public class ArenaController {
     }
 
     public void addObstacle(ActionEvent event) {
-        List<String> obstacleOptions = Arrays.asList("Obstacle1.png", "Obstacle2.png", "Obstacle3.png");
+        // List of obstacle image paths
+        List<String> obstacleOptions = Arrays.asList(
+                "/Images/Obstacle1.png",
+                "/Images/Obstacle2.png",
+                "/Images/Obstacle3.png"
+        );
+
+        // Show a dialog to select an obstacle image
         ChoiceDialog<String> dialog = new ChoiceDialog<>(obstacleOptions.get(0), obstacleOptions);
         dialog.setTitle("Select Obstacle");
         dialog.setHeaderText("Choose an obstacle to add to the arena:");
@@ -192,6 +199,7 @@ public class ArenaController {
             obstacleCount++;
         });
     }
+
 
     public void fileAlert(ActionEvent event) {
         // Placeholder for file alert logic

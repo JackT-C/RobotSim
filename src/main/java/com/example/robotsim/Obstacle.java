@@ -7,7 +7,8 @@ public class Obstacle extends ImageView {
     private String type;
 
     public Obstacle(double x, double y, String imagePath) {
-        super(new Image("Obstacle1.png")); // Load custom obstacle image
+        // Resolve the image resource before calling the superclass constructor
+        super(resolveImage(imagePath));
         this.setX(x);
         this.setY(y);
         this.setFitWidth(50); // Set appropriate size
@@ -21,5 +22,10 @@ public class Obstacle extends ImageView {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    // Helper method to resolve the image
+    private static Image resolveImage(String imagePath) {
+        return new Image(Obstacle.class.getResource(imagePath).toExternalForm());
     }
 }

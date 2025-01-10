@@ -1,5 +1,6 @@
 package com.example.robotsim;
 
+import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -59,6 +60,25 @@ public class Robot extends Group {
         return nameText.getText();
     }
 
+    private void handleObstacleInteraction(Robot robot, Obstacle obstacle) {
+        Bounds robotBounds = robot.getBoundsInParent();
+        Bounds obstacleBounds = obstacle.getBoundsInParent();
+
+        if (robotBounds.intersects(obstacleBounds)) {
+            switch (obstacle.getType()) {
+                case "Lampost":
+                    robot.navigateAround(obstacle);
+                    break;
+                case "Rock":
+                    robot.jumpOver(obstacle);
+                    break;
+                case "Lake":
+                    robot.navigateAround(obstacle);
+                    break;
+            }
+        }
+    }
+
 
     public void updatePosition() {
         // Convert direction to radians
@@ -108,5 +128,13 @@ public class Robot extends Group {
             setLayoutX(event.getSceneX() - imageView.getFitWidth() / 2);
             setLayoutY(event.getSceneY() - imageView.getFitHeight() / 2);
         });
+    }
+
+    public void navigateAround(Obstacle obstacle) {
+        // Logic to navigate around the obstacle
+    }
+
+    public void jumpOver(Obstacle obstacle) {
+        // Logic to simulate jumping over the obstacle
     }
 }
