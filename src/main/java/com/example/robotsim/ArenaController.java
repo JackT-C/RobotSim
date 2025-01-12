@@ -8,13 +8,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceDialog;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,37 +42,83 @@ public class ArenaController {
         // Initialization logic for the arena
     }
 
+
     @FXML
     private void addRobot() {
-        // Prompt user to enter robot name
-        TextInputDialog dialog = new TextInputDialog("Robot");
-        dialog.setTitle("Name Your Robot");
-        dialog.setHeaderText("Enter a name for the new robot:");
-        dialog.setContentText("Name:");
+        // Create a custom dialog
+        Dialog<Pair<String, Double>> dialog = new Dialog<>();
+        dialog.setTitle("Create Robot");
+        dialog.setHeaderText("Enter a name and choose the size for your robot:");
 
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            double x = ThreadLocalRandom.current().nextDouble(50, arenaPane.getWidth() - 50 - Robot.DEFAULT_SIZE);
-            double y = ThreadLocalRandom.current().nextDouble(50, arenaPane.getHeight() - 50 - Robot.DEFAULT_SIZE);
+        // Set up the dialog's content
+        Label nameLabel = new Label("Name:");
+        TextField nameField = new TextField();
+        Label sizeLabel = new Label("Size:");
+        Slider sizeSlider = new Slider(30, 150, 50); // Slider for size selection
+        sizeSlider.setShowTickLabels(true);
+        sizeSlider.setShowTickMarks(true);
 
-            Robot robot = new Robot(name, x, y);
+        // Display current size value
+        Label sizeValueLabel = new Label("50");
+        sizeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            sizeValueLabel.setText(String.format("%.0f", newValue));
+        });
+
+        // Layout for the dialog content
+        VBox content = new VBox(10);
+        content.getChildren().addAll(nameLabel, nameField, sizeLabel, sizeSlider, sizeValueLabel);
+
+        dialog.getDialogPane().setContent(content);
+
+        // Add OK and Cancel buttons
+        ButtonType okButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+        // Convert the result to a name and size when the OK button is clicked
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButtonType) {
+                String name = nameField.getText();
+                double size = sizeSlider.getValue();
+                return new Pair<>(name, size);
+            }
+            return null;
+        });
+
+        // Show the dialog and process the result
+        Optional<Pair<String, Double>> result = dialog.showAndWait();
+        result.ifPresent(pair -> {
+            String name = pair.getKey();
+            double size = pair.getValue();
+
+            // Ensure robot is placed within valid bounds
+            double x = ThreadLocalRandom.current().nextDouble(50, arenaPane.getWidth() - size);
+            double y = ThreadLocalRandom.current().nextDouble(50, arenaPane.getHeight() - size);
+
+            // Create the robot with the selected size
+            Robot robot = new Robot(name, x, y, size);
+
+            // Set behavior for interaction
             robot.setOnMouseClicked(event -> robot.changeDirection());
 
+            // Add to arenaPane
             arenaPane.getChildren().add(robot);
+
+            // Start animation
             animateRobot(robot);
             robots.add(robot);
-            updateRobotInfo(); // Update robot details initially
+            updateRobotInfo();
         });
     }
+
 
     private void animateRobot(Robot robot) {
         Timeline animation = new Timeline(new KeyFrame(Duration.millis(50), event -> {
             robot.updatePosition();
 
-            if (robot.getX() < 0 || robot.getX() + Robot.DEFAULT_SIZE > arenaPane.getWidth()) {
+            if (robot.getX() < 0 || robot.getX() + robot.getRobotWidth() >= arenaPane.getWidth()) {
                 robot.bounceHorizontally();
             }
-            if (robot.getY() < 0 || robot.getY() + Robot.DEFAULT_SIZE > arenaPane.getHeight()) {
+            if (robot.getY() < 0 || robot.getY() + robot.getRobotHeight() >= arenaPane.getHeight()) {
                 robot.bounceVertically();
             }
 

@@ -12,18 +12,22 @@ public class Robot extends Group {
     private final Text nameText;
     private final ImageView imageView;
 
-    public static final double DEFAULT_SIZE = 50.0;
-
     private double direction; // Angle in degrees
     private double speed;
     private final Random random = new Random();
+    private double robotWidth = 50;
+    private double robotHeight = 50;
 
-    public Robot(String name, double x, double y) {
+    public Robot(String name, double x, double y, double size) {
         // Load robot image
         Image robotImage = new Image(getClass().getResource("/Images/robot.png").toExternalForm());
         imageView = new ImageView(robotImage);
-        imageView.setFitWidth(DEFAULT_SIZE);
-        imageView.setFitHeight(DEFAULT_SIZE);
+        robotWidth = size;
+        robotHeight = size;
+        imageView.setFitWidth(size);
+        imageView.setFitHeight(size);
+
+
 
         // Set position
         setLayoutX(x);
@@ -34,6 +38,7 @@ public class Robot extends Group {
         nameText.setStyle("-fx-font-size: 14; -fx-fill: black;");
         nameText.setX(0); // Center align name
         nameText.setY(-10); // Above the robot
+
 
         // Combine image and name
         getChildren().addAll(imageView, nameText);
@@ -47,7 +52,8 @@ public class Robot extends Group {
     }
 
 
-    // Add getters for position and name
+
+    // Add getters for position, name and size
     public double getX() {
         return getLayoutX();
     }
@@ -59,6 +65,14 @@ public class Robot extends Group {
     public String getName() {
         return nameText.getText();
     }
+
+    public double getRobotWidth(){
+        return robotWidth;
+    }
+    public double getRobotHeight(){
+        return robotHeight;
+    }
+
 
     private void handleObstacleInteraction(Robot robot, Obstacle obstacle) {
         Bounds robotBounds = robot.getBoundsInParent();
