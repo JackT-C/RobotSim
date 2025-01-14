@@ -45,83 +45,74 @@ public class ArenaController {
 
 
     @FXML
-    private void addRobot() {
-        // Create a custom dialog
-        Dialog<Pair<String, Pair<String, Double>>> dialog = new Dialog<>();
-        dialog.setTitle("Create Robot");
-        dialog.setHeaderText("Enter a name, choose a robot type and size for your robot:");
+    private void addRobot(ActionEvent event) {
+        // List of robot types
+        List<String> robotOptions = Arrays.asList("Default Robot", "Sensor Robot");
 
-        // Set up the dialog's content
-        Label nameLabel = new Label("Name:");
-        TextField nameField = new TextField();
+        // Create a dialog for adding a robot
+        Dialog<Pair<String, Double>> dialog = new Dialog<>();
+        dialog.setTitle("Add Robot");
+        dialog.setHeaderText("Choose a robot type and size:");
+
+        // Set the dialog content
         Label typeLabel = new Label("Robot Type:");
-
-        // Robot Type dropdown
         ChoiceBox<String> typeChoiceBox = new ChoiceBox<>();
-        typeChoiceBox.getItems().addAll("Default Robot", "Sensor Robot");
-        typeChoiceBox.setValue("Default Robot"); // Default selection
+        typeChoiceBox.getItems().addAll(robotOptions);
+        typeChoiceBox.setValue(robotOptions.get(0)); // Default selection
 
-        Label sizeLabel = new Label("Size:");
-        Slider sizeSlider = new Slider(30, 150, 50); // Slider for size selection
-        sizeSlider.setShowTickLabels(true);
+        Label sizeLabel = new Label("Robot Size:");
+        Slider sizeSlider = new Slider(30, 150, 50); // Min size: 30, Max size: 150, Default: 50
         sizeSlider.setShowTickMarks(true);
-
-        // Display current size value
-        Label sizeValueLabel = new Label("50");
-        sizeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            sizeValueLabel.setText(String.format("%.0f", newValue));
-        });
+        sizeSlider.setShowTickLabels(true);
+        sizeSlider.setMajorTickUnit(20);
+        sizeSlider.setBlockIncrement(5);
 
         // Layout for the dialog content
-        VBox content = new VBox(10);
-        content.getChildren().addAll(nameLabel, nameField, typeLabel, typeChoiceBox, sizeLabel, sizeSlider, sizeValueLabel);
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.add(typeLabel, 0, 0);
+        gridPane.add(typeChoiceBox, 1, 0);
+        gridPane.add(sizeLabel, 0, 1);
+        gridPane.add(sizeSlider, 1, 1);
 
-        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setContent(gridPane);
 
         // Add OK and Cancel buttons
         ButtonType okButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
 
-        // Convert the result to a name, robot type, and size when the OK button is clicked
+        // Convert the result to a pair of robot type and size
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == okButtonType) {
-                String name = nameField.getText();
-                String robotType = typeChoiceBox.getValue();
-                double size = sizeSlider.getValue();
-                return new Pair<>(name, new Pair<>(robotType, size));
+                return new Pair<>(typeChoiceBox.getValue(), sizeSlider.getValue());
             }
             return null;
         });
 
         // Show the dialog and process the result
-        Optional<Pair<String, Pair<String, Double>>> result = dialog.showAndWait();
-        result.ifPresent(pair -> {
-            String name = pair.getKey();
-            String robotType = pair.getValue().getKey();
-            double size = pair.getValue().getValue();
+        Optional<Pair<String, Double>> result = dialog.showAndWait();
+        result.ifPresent(robotData -> {
+            String selectedType = robotData.getKey();
+            double size = robotData.getValue();
 
-            // Ensure robot is placed within valid bounds
-            double x = ThreadLocalRandom.current().nextDouble(50, arenaPane.getWidth() - size);
-            double y = ThreadLocalRandom.current().nextDouble(50, arenaPane.getHeight() - size);
+            Robot robot = null;
 
-            // Create the robot based on the selected type
-            Robot robot;
-            if (robotType.equals("Sensor Robot")) {
-                robot = new SensorRobot(name, x, y, size);
-            } else {
-                robot = new Robot(name, x, y, size);
+            // Create the specific robot based on the selected type
+            switch (selectedType) {
+                case "Default Robot":
+                    robot = new Robot("Default Robot", 100 + robotCount * 50, 100 + robotCount * 50, size);
+                    break;
+                case "Sensor Robot":
+                    robot = new SensorRobot("Sensor Robot", 100 + robotCount * 50, 100 + robotCount * 50, size);
+                    break;
             }
 
-            // Set behavior for interaction (can be customized further)
-            robot.setOnMouseClicked(event -> robot.changeDirection());
-
-            // Add to arenaPane
-            arenaPane.getChildren().add(robot);
-
-            // Start animation
-            animateRobot(robot);
-            robots.add(robot);
-            updateRobotInfo();
+            if (robot != null) {
+                arenaPane.getChildren().add(robot);
+                animateRobot(robot);
+                robotCount++;
+            }
         });
     }
 
@@ -131,10 +122,10 @@ public class ArenaController {
         Timeline animation = new Timeline(new KeyFrame(Duration.millis(50), event -> {
             robot.updatePosition();
 
-            if (robot.getX() < 0 || robot.getX() + robot.getRobotWidth() >= arenaPane.getWidth()) {
+            if (robot.getX() <= 0 || robot.getX() + robot.getRobotWidth() >= arenaPane.getWidth()) {
                 robot.bounceHorizontally();
             }
-            if (robot.getY() < 0 || robot.getY() + robot.getRobotHeight() >= arenaPane.getHeight()) {
+            if (robot.getY() <= 0 || robot.getY() + robot.getRobotHeight() >= arenaPane.getHeight()) {
                 robot.bounceVertically();
             }
 

@@ -5,22 +5,17 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
-import java.io.InputStream;
-
 public class SensorRobot extends Robot{
     private Polygon frontSensor;
 
     public SensorRobot(String name, double x, double y, double size) {
         super(name, x, y, size);
-        InputStream inputStream = SensorRobot.class.getResourceAsStream("/Images/sensor_robot.png");
-        if (inputStream == null) {
-            System.err.println("Image file not found: /Images/sensor_robot.png");
-        } else {
-            ImageView imageView = new ImageView(new Image(inputStream));
-            imageView.setFitWidth(size);
-            imageView.setFitHeight(size);
-            getChildren().add(imageView);
-        }
+        // Remove the default image from the parent class and add a new one
+        getChildren().clear();
+        ImageView imageView = new ImageView(new Image(SensorRobot.class.getResourceAsStream("/Images/sensorRobot.png")));
+        imageView.setFitWidth(size);
+        imageView.setFitHeight(size);
+        getChildren().add(imageView);
 
         // Add a triangular front sensor
         frontSensor = new Polygon(
@@ -28,14 +23,12 @@ public class SensorRobot extends Robot{
                 -5, size / 2,  // Bottom-left corner
                 size + 5, size / 2 // Bottom-right corner
         );
-        frontSensor.setFill(Color.TRANSPARENT);
-        frontSensor.setStroke(Color.BLACK);
-
+        frontSensor.setFill(Color.GREEN);
         getChildren().add(frontSensor);
     }
 
 
-    //polymorphism
+
     @Override
     public void updatePosition() {
         super.updatePosition();
@@ -63,11 +56,24 @@ public class SensorRobot extends Robot{
     public void bounceHorizontally() {
         super.bounceHorizontally();
         frontSensor.setFill(Color.PURPLE); // Indicate wall collision
+        try {
+            Thread.sleep(100);
+            frontSensor.setFill(Color.GREEN);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
     public void bounceVertically() {
         super.bounceVertically();
         frontSensor.setFill(Color.PURPLE); // Indicate wall collision
+        try {
+            Thread.sleep(100);
+            frontSensor.setFill(Color.GREEN);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
