@@ -12,11 +12,15 @@ public class Robot extends Group {
     private final Text nameText;
     private final ImageView imageView;
 
+    //Some things a robot object might have:
+
     private double direction; // Angle in degrees
     private double speed;
     private final Random random = new Random();
     private double robotWidth = 50;
     private double robotHeight = 50;
+
+    //Constructor with parameters
 
     public Robot(String name, double x, double y, double size) {
         // Load robot image
@@ -24,11 +28,10 @@ public class Robot extends Group {
         imageView = new ImageView(robotImage);
         robotWidth = size;
         robotHeight = size;
+
+        //set size to size given by user
         imageView.setFitWidth(size);
         imageView.setFitHeight(size);
-
-
-
         // Set position
         setLayoutX(x);
         setLayoutY(y);
@@ -43,7 +46,7 @@ public class Robot extends Group {
         // Combine image and name
         getChildren().addAll(imageView, nameText);
 
-        // Initialize movement parameters
+        // Initialize movement parameters (random angle between 0 and 360 degrees)
         direction = random.nextDouble() * 360; // Random direction
         speed = 2 + random.nextDouble() * 2; // Random speed between 2 and 4
 
@@ -57,40 +60,17 @@ public class Robot extends Group {
     public double getX() {
         return getLayoutX();
     }
-
     public double getY() {
         return getLayoutY();
     }
-
     public String getName() {
         return nameText.getText();
     }
-
     public double getRobotWidth(){
         return robotWidth;
     }
     public double getRobotHeight(){
         return robotHeight;
-    }
-
-
-    private void handleObstacleInteraction(Robot robot, Obstacle obstacle) {
-        Bounds robotBounds = robot.getBoundsInParent();
-        Bounds obstacleBounds = obstacle.getBoundsInParent();
-
-        if (robotBounds.intersects(obstacleBounds)) {
-            switch (obstacle.getType()) {
-                case "Lampost":
-                    robot.navigateAround(obstacle);
-                    break;
-                case "Rock":
-                    robot.jumpOver(obstacle);
-                    break;
-                case "Lake":
-                    robot.navigateAround(obstacle);
-                    break;
-            }
-        }
     }
 
 
@@ -144,11 +124,4 @@ public class Robot extends Group {
         });
     }
 
-    public void navigateAround(Obstacle obstacle) {
-        // Logic to navigate around the obstacle
-    }
-
-    public void jumpOver(Obstacle obstacle) {
-        // Logic to simulate jumping over the obstacle
-    }
 }

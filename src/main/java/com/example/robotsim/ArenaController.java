@@ -9,6 +9,7 @@ import javafx.geometry.Bounds;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -46,13 +47,20 @@ public class ArenaController {
     @FXML
     private void addRobot() {
         // Create a custom dialog
-        Dialog<Pair<String, Double>> dialog = new Dialog<>();
+        Dialog<Pair<String, Pair<String, Double>>> dialog = new Dialog<>();
         dialog.setTitle("Create Robot");
-        dialog.setHeaderText("Enter a name and choose the size for your robot:");
+        dialog.setHeaderText("Enter a name, choose a robot type and size for your robot:");
 
         // Set up the dialog's content
         Label nameLabel = new Label("Name:");
         TextField nameField = new TextField();
+        Label typeLabel = new Label("Robot Type:");
+
+        // Robot Type dropdown
+        ChoiceBox<String> typeChoiceBox = new ChoiceBox<>();
+        typeChoiceBox.getItems().addAll("Default Robot", "Sensor Robot");
+        typeChoiceBox.setValue("Default Robot"); // Default selection
+
         Label sizeLabel = new Label("Size:");
         Slider sizeSlider = new Slider(30, 150, 50); // Slider for size selection
         sizeSlider.setShowTickLabels(true);
@@ -66,7 +74,7 @@ public class ArenaController {
 
         // Layout for the dialog content
         VBox content = new VBox(10);
-        content.getChildren().addAll(nameLabel, nameField, sizeLabel, sizeSlider, sizeValueLabel);
+        content.getChildren().addAll(nameLabel, nameField, typeLabel, typeChoiceBox, sizeLabel, sizeSlider, sizeValueLabel);
 
         dialog.getDialogPane().setContent(content);
 
@@ -74,30 +82,37 @@ public class ArenaController {
         ButtonType okButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
 
-        // Convert the result to a name and size when the OK button is clicked
+        // Convert the result to a name, robot type, and size when the OK button is clicked
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == okButtonType) {
                 String name = nameField.getText();
+                String robotType = typeChoiceBox.getValue();
                 double size = sizeSlider.getValue();
-                return new Pair<>(name, size);
+                return new Pair<>(name, new Pair<>(robotType, size));
             }
             return null;
         });
 
         // Show the dialog and process the result
-        Optional<Pair<String, Double>> result = dialog.showAndWait();
+        Optional<Pair<String, Pair<String, Double>>> result = dialog.showAndWait();
         result.ifPresent(pair -> {
             String name = pair.getKey();
-            double size = pair.getValue();
+            String robotType = pair.getValue().getKey();
+            double size = pair.getValue().getValue();
 
             // Ensure robot is placed within valid bounds
             double x = ThreadLocalRandom.current().nextDouble(50, arenaPane.getWidth() - size);
             double y = ThreadLocalRandom.current().nextDouble(50, arenaPane.getHeight() - size);
 
-            // Create the robot with the selected size
-            Robot robot = new Robot(name, x, y, size);
+            // Create the robot based on the selected type
+            Robot robot;
+            if (robotType.equals("Sensor Robot")) {
+                robot = new SensorRobot(name, x, y, size);
+            } else {
+                robot = new Robot(name, x, y, size);
+            }
 
-            // Set behavior for interaction
+            // Set behavior for interaction (can be customized further)
             robot.setOnMouseClicked(event -> robot.changeDirection());
 
             // Add to arenaPane
@@ -109,6 +124,7 @@ public class ArenaController {
             updateRobotInfo();
         });
     }
+
 
 
     private void animateRobot(Robot robot) {
@@ -224,26 +240,78 @@ public class ArenaController {
     }
 
     public void addObstacle(ActionEvent event) {
-        // List of obstacle image paths
-        List<String> obstacleOptions = Arrays.asList(
-                "/Images/Obstacle1.png",
-                "/Images/Obstacle2.png",
-                "/Images/Obstacle3.png"
-        );
+        // List of obstacle types
+        List<String> obstacleOptions = Arrays.asList("Lamp", "Rock", "Lake");
 
-        // Show a dialog to select an obstacle image
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(obstacleOptions.get(0), obstacleOptions);
-        dialog.setTitle("Select Obstacle");
-        dialog.setHeaderText("Choose an obstacle to add to the arena:");
-        dialog.setContentText("Obstacles:");
+        // Create a dialog for adding an obstacle
+        Dialog<Pair<String, Double>> dialog = new Dialog<>();
+        dialog.setTitle("Add Obstacle");
+        dialog.setHeaderText("Choose an obstacle type and size:");
 
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(obstacleImage -> {
-            Obstacle obstacle = new Obstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, obstacleImage);
-            arenaPane.getChildren().add(obstacle);
-            obstacleCount++;
+        // Set the dialog content
+        Label typeLabel = new Label("Obstacle Type:");
+        ChoiceBox<String> typeChoiceBox = new ChoiceBox<>();
+        typeChoiceBox.getItems().addAll(obstacleOptions);
+        typeChoiceBox.setValue(obstacleOptions.get(0)); // Default selection
+
+        Label sizeLabel = new Label("Obstacle Size:");
+        Slider sizeSlider = new Slider(50, 200, 100); // Min size: 50, Max size: 200, Default: 100
+        sizeSlider.setShowTickMarks(true);
+        sizeSlider.setShowTickLabels(true);
+        sizeSlider.setMajorTickUnit(20);
+        sizeSlider.setBlockIncrement(5);
+
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.add(typeLabel, 0, 0);
+        gridPane.add(typeChoiceBox, 1, 0);
+        gridPane.add(sizeLabel, 0, 1);
+        gridPane.add(sizeSlider, 1, 1);
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        // Add OK and Cancel buttons
+        ButtonType okButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+        // Convert the result to a pair of obstacle type and size
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButtonType) {
+                return new Pair<>(typeChoiceBox.getValue(), sizeSlider.getValue());
+            }
+            return null;
+        });
+
+        // Show the dialog and process the result
+        Optional<Pair<String, Double>> result = dialog.showAndWait();
+        result.ifPresent(obstacleData -> {
+            String selectedType = obstacleData.getKey();
+            double size = obstacleData.getValue();
+
+            Obstacle obstacle = null;
+
+            // Create the specific obstacle based on the selected type
+            switch (selectedType) {
+                case "Lamp":
+                    obstacle = new LampObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
+                    break;
+                case "Rock":
+                    obstacle = new RockObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
+                    break;
+                case "Lake":
+                    obstacle = new LakeObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
+                    break;
+            }
+
+            if (obstacle != null) {
+                arenaPane.getChildren().add(obstacle);
+                obstacleCount++;
+            }
         });
     }
+
+
 
 
     public void fileAlert(ActionEvent event) {
