@@ -8,7 +8,7 @@ import javafx.scene.text.Text;
 
 import java.util.Random;
 
-public class Robot extends Group {
+public abstract class Robot extends Group {
     private final Text nameText;
     private final ImageView imageView;
 

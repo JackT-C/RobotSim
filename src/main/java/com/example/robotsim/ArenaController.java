@@ -47,7 +47,7 @@ public class ArenaController {
     @FXML
     private void addRobot(ActionEvent event) {
         // List of robot types
-        List<String> robotOptions = Arrays.asList("Default Robot", "Sensor Robot");
+        List<String> robotOptions = Arrays.asList("Default Robot", "Sensor Robot", "User Controlled", "Predator Robot");
 
         // Create a dialog for adding a robot
         Dialog<Pair<String, Double>> dialog = new Dialog<>();
@@ -117,11 +117,18 @@ public class ArenaController {
             // Create the specific robot based on the selected type
             switch (selectedType) {
                 case "Default Robot":
-                    robot = new Robot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                    robot = new DefaultRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                     break;
                 case "Sensor Robot":
                     robot = new SensorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                     break;
+                case "Predator Robot":
+                    robot = new PredatorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                    break;
+                case "User Controlled":
+                    robot = new UserControlledRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                    break;
+
             }
 
             if (robot != null) {
