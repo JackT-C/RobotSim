@@ -6,9 +6,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public abstract class Robot extends Group {
+public abstract class Robot extends Group implements Serializable {
     private final Text nameText;
     private final ImageView imageView;
 
@@ -19,6 +20,7 @@ public abstract class Robot extends Group {
     private final Random random = new Random();
     private double robotWidth = 50;
     private double robotHeight = 50;
+    private transient double x, y;
 
     //Constructor with parameters
 

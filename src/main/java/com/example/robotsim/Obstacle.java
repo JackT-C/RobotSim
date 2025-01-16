@@ -3,8 +3,12 @@ package com.example.robotsim;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public abstract class Obstacle extends ImageView {
+import java.io.Serializable;
+
+public abstract class Obstacle extends ImageView implements Serializable {
     private String type;
+    private double size;
+    private transient double x, y;
     private double mouseX;
     private double mouseY;
 

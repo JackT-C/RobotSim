@@ -381,7 +381,28 @@ public class ArenaController {
 
 
 
+    @FXML
     public void fileAlert(ActionEvent event) {
-        // Placeholder for file alert logic
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("File Operation");
+        alert.setHeaderText("Would you like to save or load the arena?");
+        alert.setContentText("Choose an option:");
+
+        ButtonType saveButton = new ButtonType("Save");
+        ButtonType loadButton = new ButtonType("Load");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(saveButton, loadButton, cancelButton);
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent()) {
+            if (result.get() == saveButton) {
+                FileHandler.saveArena(arenaPane, robots, robotCount, obstacleCount);
+            } else if (result.get() == loadButton) {
+                FileHandler.loadArena(arenaPane, robots);
+            }
+        }
     }
+
 }
