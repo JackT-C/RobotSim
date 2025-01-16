@@ -1,5 +1,9 @@
 package com.example.robotsim;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+
 public class LampObstacle extends Obstacle {
 
     public LampObstacle(double x, double y, double size) {
@@ -9,7 +13,9 @@ public class LampObstacle extends Obstacle {
 
     @Override
     public void handleCollision(Robot robot) {
-        // Lamp-specific collision behavior: Slows down the robot
-        robot.setSpeed(robot.getSpeed() * 0.5); // Halve the robot's speed
+        // Logic to make the lamp "fall over"
+        this.setRotate(90); // Example: Rotate the lamp to show it's fallen
+        new Timeline(new KeyFrame(Duration.seconds(5), e -> this.setRotate(0))).play(); // Revert after 5 seconds
     }
+
 }

@@ -167,34 +167,37 @@ public class ArenaController {
         animation.play();
     }
 
+
     private void detectObstacleCollisions(Robot robot) {
+        if (robot instanceof SensorRobot) {
+            avoidObstacles((SensorRobot) robot);
+        } else {
+            handleNormalRobotObstacleInteraction(robot);
+        }
+    }
+
+    private void avoidObstacles(SensorRobot sensorRobot) {
         for (var node : arenaPane.getChildren()) {
             if (node instanceof Obstacle) {
                 Obstacle obstacle = (Obstacle) node;
-                if (isCollidingWithObstacle(robot, obstacle) && obstacle.getType() == "Rock"){
-                    obstacle.handleCollision(robot);
-                    Alert RockAlert = new Alert(Alert.AlertType.INFORMATION);
-                    RockAlert.setContentText("The Robot has collided with a rock, causing it to stop.");
-                    RockAlert.show();
-                }
-                else if (isCollidingWithObstacle(robot, obstacle) && obstacle.getType() == "Lamp"){
-                    obstacle.handleCollision(robot);
-                    Alert LampAlert = new Alert(Alert.AlertType.INFORMATION);
-                    LampAlert.setContentText("The Robot has ran into a lamp, causing the lamp to fall over.");
-                    LampAlert.show();
-                }
-                else if (isCollidingWithObstacle(robot, obstacle) && obstacle.getType() == "Lake"){
-                    obstacle.handleCollision(robot);
-                    Alert LakeAlert = new Alert(Alert.AlertType.INFORMATION);
-                    LakeAlert.setContentText("The Robot tried to swim in a Lake, the Robot's speed is now halved.");
-                }
-                else {
-                    // If no type is found handle collision: Bounce robot back
-                    handleObstacleCollision(robot, obstacle);
+                if (isCollidingWithObstacle(sensorRobot, obstacle)) {
+                    sensorRobot.avoidObstacle(obstacle);
                 }
             }
         }
     }
+
+    private void handleNormalRobotObstacleInteraction(Robot robot) {
+        for (var node : arenaPane.getChildren()) {
+            if (node instanceof Obstacle) {
+                Obstacle obstacle = (Obstacle) node;
+                if (isCollidingWithObstacle(robot, obstacle)) {
+                    obstacle.handleCollision(robot); // Polymorphic behavior handles specific logic
+                }
+            }
+        }
+    }
+
 
     private boolean isCollidingWithObstacle(Robot robot, Obstacle obstacle) {
         Bounds robotBounds = robot.getBoundsInParent();

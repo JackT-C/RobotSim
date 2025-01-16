@@ -45,7 +45,7 @@ public class SensorRobot extends Robot {
         frontSensor.setRotate(angle);
     }
 
-    public void detectObstacle(Obstacle obstacle) {
+    public void avoidObstacle(Obstacle obstacle) {
         if (frontSensor.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
             if (!recentlyDetectedObstacle) {
                 frontSensor.setFill(Color.RED); // Obstacle detected
