@@ -52,14 +52,20 @@ public class ArenaController {
         // Create a dialog for adding a robot
         Dialog<Pair<String, Double>> dialog = new Dialog<>();
         dialog.setTitle("Add Robot");
-        dialog.setHeaderText("Choose a robot type and size:");
+        dialog.setHeaderText("Customize your robot:");
 
-        // Set the dialog content
+        // Robot Name
+        Label nameLabel = new Label("Robot Name:");
+        TextField nameField = new TextField();
+        nameField.setPromptText("Enter robot name");
+
+        // Robot Type
         Label typeLabel = new Label("Robot Type:");
         ChoiceBox<String> typeChoiceBox = new ChoiceBox<>();
         typeChoiceBox.getItems().addAll(robotOptions);
         typeChoiceBox.setValue(robotOptions.get(0)); // Default selection
 
+        // Robot Size
         Label sizeLabel = new Label("Robot Size:");
         Slider sizeSlider = new Slider(30, 150, 50); // Min size: 30, Max size: 150, Default: 50
         sizeSlider.setShowTickMarks(true);
@@ -71,10 +77,12 @@ public class ArenaController {
         GridPane gridPane = new GridPane();
         gridPane.setHgap(10);
         gridPane.setVgap(10);
-        gridPane.add(typeLabel, 0, 0);
-        gridPane.add(typeChoiceBox, 1, 0);
-        gridPane.add(sizeLabel, 0, 1);
-        gridPane.add(sizeSlider, 1, 1);
+        gridPane.add(nameLabel, 0, 0);
+        gridPane.add(nameField, 1, 0);
+        gridPane.add(typeLabel, 0, 1);
+        gridPane.add(typeChoiceBox, 1, 1);
+        gridPane.add(sizeLabel, 0, 2);
+        gridPane.add(sizeSlider, 1, 2);
 
         dialog.getDialogPane().setContent(gridPane);
 
@@ -82,10 +90,16 @@ public class ArenaController {
         ButtonType okButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
 
-        // Convert the result to a pair of robot type and size
+        // Convert the result to a pair of robot type and size, including name
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == okButtonType) {
-                return new Pair<>(typeChoiceBox.getValue(), sizeSlider.getValue());
+                String name = nameField.getText().trim();
+                if (name.isEmpty()) {
+                    name = "Robot " + (robotCount + 1); // Default name if user leaves it blank
+                }
+                String type = typeChoiceBox.getValue();
+                Double size = sizeSlider.getValue();
+                return new Pair<>(name + "|" + type, size);
             }
             return null;
         });
@@ -93,7 +107,9 @@ public class ArenaController {
         // Show the dialog and process the result
         Optional<Pair<String, Double>> result = dialog.showAndWait();
         result.ifPresent(robotData -> {
-            String selectedType = robotData.getKey();
+            String[] parts = robotData.getKey().split("\\|");
+            String name = parts[0];
+            String selectedType = parts[1];
             double size = robotData.getValue();
 
             Robot robot = null;
@@ -101,17 +117,22 @@ public class ArenaController {
             // Create the specific robot based on the selected type
             switch (selectedType) {
                 case "Default Robot":
-                    robot = new Robot("Default Robot", 100 + robotCount * 50, 100 + robotCount * 50, size);
+                    robot = new Robot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                     break;
                 case "Sensor Robot":
-                    robot = new SensorRobot("Sensor Robot", 100 + robotCount * 50, 100 + robotCount * 50, size);
+                    robot = new SensorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                     break;
             }
 
             if (robot != null) {
+                // Add robot to the arena and the list of robots
                 arenaPane.getChildren().add(robot);
+                robots.add(robot);
+
                 animateRobot(robot);
+
                 robotCount++;
+                updateRobotInfo(); // Update TextArea with the new robot
             }
         });
     }
@@ -122,6 +143,7 @@ public class ArenaController {
         Timeline animation = new Timeline(new KeyFrame(Duration.millis(50), event -> {
             robot.updatePosition();
 
+            // Handle wall collisions
             if (robot.getX() <= 0 || robot.getX() + robot.getRobotWidth() >= arenaPane.getWidth()) {
                 robot.bounceHorizontally();
             }
@@ -129,17 +151,79 @@ public class ArenaController {
                 robot.bounceVertically();
             }
 
+            // Handle text area collisions
             if (isCollidingWithTextArea(robot)) {
                 bounceOffTextArea(robot);
             }
 
-            detectCollisions(robot);
-            updateRobotInfo(); // Update robot details during movement
+            // Detect collisions with obstacles
+            detectObstacleCollisions(robot);
+
+            // Update robot details in the text area
+            updateRobotInfo();
         }));
 
         animation.setCycleCount(Timeline.INDEFINITE);
         animation.play();
     }
+
+    private void detectObstacleCollisions(Robot robot) {
+        for (var node : arenaPane.getChildren()) {
+            if (node instanceof Obstacle) {
+                Obstacle obstacle = (Obstacle) node;
+                if (isCollidingWithObstacle(robot, obstacle) && obstacle.getType() == "Rock"){
+                    obstacle.handleCollision(robot);
+                    Alert RockAlert = new Alert(Alert.AlertType.INFORMATION);
+                    RockAlert.setContentText("The Robot has collided with a rock, causing it to stop.");
+                    RockAlert.show();
+                }
+                else if (isCollidingWithObstacle(robot, obstacle) && obstacle.getType() == "Lamp"){
+                    obstacle.handleCollision(robot);
+                    Alert LampAlert = new Alert(Alert.AlertType.INFORMATION);
+                    LampAlert.setContentText("The Robot has ran into a lamp, causing the lamp to fall over.");
+                    LampAlert.show();
+                }
+                else if (isCollidingWithObstacle(robot, obstacle) && obstacle.getType() == "Lake"){
+                    obstacle.handleCollision(robot);
+                    Alert LakeAlert = new Alert(Alert.AlertType.INFORMATION);
+                    LakeAlert.setContentText("The Robot tried to swim in a Lake, the Robot's speed is now halved.");
+                }
+                else {
+                    // If no type is found handle collision: Bounce robot back
+                    handleObstacleCollision(robot, obstacle);
+                }
+            }
+        }
+    }
+
+    private boolean isCollidingWithObstacle(Robot robot, Obstacle obstacle) {
+        Bounds robotBounds = robot.getBoundsInParent();
+        Bounds obstacleBounds = obstacle.getBoundsInParent();
+        return robotBounds.intersects(obstacleBounds);
+    }
+
+    private void handleObstacleCollision(Robot robot, Obstacle obstacle) {
+        Bounds obstacleBounds = obstacle.getBoundsInParent();
+        Bounds robotBounds = robot.getBoundsInParent();
+
+        // Bounce robot in the opposite direction
+        if (robotBounds.getMaxX() > obstacleBounds.getMinX() && robotBounds.getMinX() < obstacleBounds.getMinX()) {
+            robot.bounceHorizontally();
+            robot.setLayoutX(robot.getLayoutX() - 5); // Push back slightly
+        } else if (robotBounds.getMinX() < obstacleBounds.getMaxX() && robotBounds.getMaxX() > obstacleBounds.getMaxX()) {
+            robot.bounceHorizontally();
+            robot.setLayoutX(robot.getLayoutX() + 5); // Push forward slightly
+        }
+
+        if (robotBounds.getMaxY() > obstacleBounds.getMinY() && robotBounds.getMinY() < obstacleBounds.getMinY()) {
+            robot.bounceVertically();
+            robot.setLayoutY(robot.getLayoutY() - 5); // Push back slightly
+        } else if (robotBounds.getMinY() < obstacleBounds.getMaxY() && robotBounds.getMaxY() > obstacleBounds.getMaxY()) {
+            robot.bounceVertically();
+            robot.setLayoutY(robot.getLayoutY() + 5); // Push forward slightly
+        }
+    }
+
 
     private boolean isCollidingWithTextArea(Robot robot) {
         Bounds textAreaBounds = robotInfoArea.getBoundsInParent();
@@ -166,33 +250,15 @@ public class ArenaController {
         }
     }
 
-    private void detectCollisions(Robot currentRobot) {
-        for (Robot otherRobot : robots) {
-            if (currentRobot == otherRobot) continue;
-
-            Bounds currentBounds = currentRobot.getBoundsInParent();
-            Bounds otherBounds = otherRobot.getBoundsInParent();
-
-            if (currentBounds.intersects(otherBounds)) {
-                currentRobot.changeDirection();
-                otherRobot.changeDirection();
-
-                currentRobot.setLayoutX(currentRobot.getLayoutX() + 5);
-                currentRobot.setLayoutY(currentRobot.getLayoutY() + 5);
-
-                otherRobot.setLayoutX(otherRobot.getLayoutX() - 5);
-                otherRobot.setLayoutY(otherRobot.getLayoutY() - 5);
-            }
-        }
-    }
 
     private void updateRobotInfo() {
         robotInfoArea.clear();
         for (Robot robot : robots) {
-            String info = String.format("Name: %s, X: %.2f, Y: %.2f\n",
+            String info = String.format("Name: %s, X: %.2f, Y: %.2f, Size: %.2f%n",
                     robot.getName(),
                     robot.getLayoutX(),
-                    robot.getLayoutY());
+                    robot.getLayoutY(),
+                    robot.getRobotWidth());
             robotInfoArea.appendText(info);
         }
     }

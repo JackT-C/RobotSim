@@ -8,8 +8,8 @@ public class RockObstacle extends Obstacle {
     }
 
     @Override
-    public void handleCollision() {
-        // Specific collision behavior for rocks
-        System.out.println("Collision with a rock obstacle! The robot slows down.");
+    public void handleCollision(Robot robot) {
+        // Rock-specific collision behavior: Stops the robot
+        robot.setSpeed(0); // Set robot's speed to 0
     }
 }

@@ -3,7 +3,7 @@ package com.example.robotsim;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class Obstacle extends ImageView {
+public abstract class Obstacle extends ImageView {
     private String type;
     private double mouseX;
     private double mouseY;
@@ -40,7 +40,5 @@ public class Obstacle extends ImageView {
         this.type = type;
     }
     // Placeholder for handling collisions (to be overridden by subclasses)
-    public void handleCollision() {
-        System.out.println("Obstacle collision detected!");
-    }
+    public abstract void handleCollision(Robot robot);
 }

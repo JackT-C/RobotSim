@@ -15,7 +15,7 @@ public class Robot extends Group {
     //Some things a robot object might have:
 
     private double direction; // Angle in degrees
-    private double speed;
+    public double speed;
     private final Random random = new Random();
     private double robotWidth = 50;
     private double robotHeight = 50;
@@ -72,6 +72,15 @@ public class Robot extends Group {
     public double getRobotHeight(){
         return robotHeight;
     }
+    public double getSpeed() {return speed;}
+    public void setSpeed(double speed) {
+        this.speed = Math.max(0, speed); // Ensure speed is non-negative
+    }
+    public void setDirection(double direction) {
+        this.direction = direction % 360; // Ensure direction stays within 0-360 degrees
+    }
+
+
 
 
     public void updatePosition() {

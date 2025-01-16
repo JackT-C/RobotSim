@@ -5,11 +5,15 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
-public class SensorRobot extends Robot{
+public class SensorRobot extends Robot {
     private Polygon frontSensor;
+    private double angle; // Angle in degrees to determine the robot's direction
+    private boolean recentlyDetectedObstacle = false; // Flag to prevent repeated obstacle reactions
 
     public SensorRobot(String name, double x, double y, double size) {
         super(name, x, y, size);
+        this.angle = 0; // Default angle facing right
+
         // Remove the default image from the parent class and add a new one
         getChildren().clear();
         ImageView imageView = new ImageView(new Image(SensorRobot.class.getResourceAsStream("/Images/sensorRobot.png")));
@@ -17,63 +21,77 @@ public class SensorRobot extends Robot{
         imageView.setFitHeight(size);
         getChildren().add(imageView);
 
-        // Add a triangular front sensor
+        // Add a triangular front sensor pointing inward
         frontSensor = new Polygon(
-                size / 2, -10, // Apex of the triangle
-                -5, size / 2,  // Bottom-left corner
-                size + 5, size / 2 // Bottom-right corner
+                size / 2, size / 2,   // Apex of the triangle at the center
+                size / 4, size,       // Bottom-left corner
+                size * 3 / 4, size    // Bottom-right corner
         );
         frontSensor.setFill(Color.GREEN);
         getChildren().add(frontSensor);
     }
 
-
-
     @Override
     public void updatePosition() {
-        super.updatePosition();
+        // Move in the direction of the current angle
+        double radians = Math.toRadians(angle);
+        double dx = Math.cos(radians) * getSpeed();
+        double dy = Math.sin(radians) * getSpeed();
+        setLayoutX(getLayoutX() + dx);
+        setLayoutY(getLayoutY() + dy);
 
-        // Update sensor position
-        frontSensor.setTranslateX(getTranslateX());
-        frontSensor.setTranslateY(getTranslateY());
+        // Update rotation of the robot and sensor to match the angle
+        setRotate(angle);
+        frontSensor.setRotate(angle);
     }
 
     public void detectObstacle(Obstacle obstacle) {
         if (frontSensor.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
-            frontSensor.setFill(Color.RED); // Obstacle detected
+            if (!recentlyDetectedObstacle) {
+                frontSensor.setFill(Color.RED); // Obstacle detected
+                angle += 90; // Turn 90 degrees to avoid the obstacle
+                normalizeAngle();
+                recentlyDetectedObstacle = true;
+
+                // Reset the detection flag after a short delay
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(500); // Delay to prevent constant detection
+                        recentlyDetectedObstacle = false;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            }
         } else {
-            frontSensor.setFill(Color.TRANSPARENT); // No obstacle detected
+            frontSensor.setFill(Color.GREEN); // No obstacle detected
         }
     }
 
     public void detectRobot(Robot otherRobot) {
         if (this != otherRobot && frontSensor.getBoundsInParent().intersects(otherRobot.getBoundsInParent())) {
             frontSensor.setFill(Color.YELLOW); // Robot detected
+            angle += 45; // Turn slightly to avoid the other robot
+            normalizeAngle();
         }
     }
 
     @Override
     public void bounceHorizontally() {
-        super.bounceHorizontally();
+        angle = 180 - angle; // Reverse horizontal direction
+        normalizeAngle();
         frontSensor.setFill(Color.PURPLE); // Indicate wall collision
-        try {
-            Thread.sleep(100);
-            frontSensor.setFill(Color.GREEN);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
     }
 
     @Override
     public void bounceVertically() {
-        super.bounceVertically();
+        angle = -angle; // Reverse vertical direction
+        normalizeAngle();
         frontSensor.setFill(Color.PURPLE); // Indicate wall collision
-        try {
-            Thread.sleep(100);
-            frontSensor.setFill(Color.GREEN);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    }
+
+    private void normalizeAngle() {
+        // Keep the angle within [0, 360) degrees
+        angle = (angle + 360) % 360;
     }
 }
