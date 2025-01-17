@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.effect.ColorAdjust?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -12,6 +13,22 @@
          <image>
             <Image url="@../../../Images/RobotSim.jpg" />
          </image>
+      </ImageView>
+      <ImageView fx:id="pauseButton" fitHeight="139.0" fitWidth="145.0" layoutX="1.0" layoutY="513.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Images/PauseButton.png" />
+         </image>
+         <effect>
+            <ColorAdjust brightness="1.0" />
+         </effect>
+      </ImageView>
+      <ImageView fx:id="PlayButton" fitHeight="139.0" fitWidth="132.0" layoutX="5.0" layoutY="351.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Images/PlayButton.png" />
+         </image>
+         <effect>
+            <ColorAdjust brightness="1.0" />
+         </effect>
       </ImageView>
       <Button fx:id="RemoveObstacle" layoutX="201.0" layoutY="35.0" mnemonicParsing="false" onAction="#removeObstacle" opacity="0.27" prefHeight="81.0" prefWidth="505.0" />
       <Button fx:id="RemoveRobot" layoutX="717.0" layoutY="35.0" mnemonicParsing="false" onAction="#removeRobot" opacity="0.27" prefHeight="81.0" prefWidth="442.0" />
