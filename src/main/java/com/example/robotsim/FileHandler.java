@@ -82,6 +82,7 @@ public class FileHandler {
         }
     }
 
+
     private static void showAlert(String title, String message) {
         javafx.application.Platform.runLater(() -> {
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);

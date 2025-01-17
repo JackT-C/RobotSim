@@ -6,7 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
 public class SensorRobot extends Robot {
-    private Polygon frontSensor;
+    private transient Polygon frontSensor;
     private double angle; // Angle in degrees to determine the robot's direction
     private boolean recentlyDetectedObstacle = false; // Flag to prevent repeated obstacle reactions
 
