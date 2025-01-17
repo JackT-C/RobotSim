@@ -11,7 +11,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
@@ -21,12 +20,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class ArenaController {
 
     private int robotCount = 0;
     private final List<Robot> robots = new ArrayList<>();
+    private final List<Obstacle> obstacles = new ArrayList<Obstacle>();
     private int obstacleCount = 0;
 
     @FXML
@@ -40,7 +39,43 @@ public class ArenaController {
 
     @FXML
     public void initialize() {
-        // Initialization logic for the arena
+        // Add one robot of each type
+        Robot defaultRobot = new DefaultRobot("Default Robot", 1000, 100, 90);
+        Robot sensorRobot = new SensorRobot("Sensor Robot", 1000, 300, 80);
+        Robot userControlledRobot = new UserControlledRobot("User Controlled", 1000, 500, 100);
+        Robot predatorRobot = new PredatorRobot("Predator Robot", 1000, 700, 70);
+
+        addRobotToArena(defaultRobot);
+        addRobotToArena(sensorRobot);
+        addRobotToArena(userControlledRobot);
+        addRobotToArena(predatorRobot);
+
+        // Add one obstacle of each type
+        Obstacle lamp = new LampObstacle(550, 650, 75);
+        Obstacle rock = new RockObstacle(250, 250, 75);
+        Obstacle lake = new LakeObstacle(750, 150, 75);
+
+        addObstacleToArena(lamp);
+        addObstacleToArena(rock);
+        addObstacleToArena(lake);
+
+        // Update robot info area
+        updateRobotInfo();
+    }
+
+    // Helper method to add a robot to the arena and the list
+    private void addRobotToArena(Robot robot) {
+        arenaPane.getChildren().add(robot);
+        robots.add(robot);
+        animateRobot(robot);
+        robotCount++;
+    }
+
+    // Helper method to add an obstacle to the arena
+    private void addObstacleToArena(Obstacle obstacle) {
+        arenaPane.getChildren().add(obstacle);
+        obstacles.add(obstacle); // Ensure obstacles are added to the list
+        obstacleCount++;
     }
 
 
@@ -176,23 +211,10 @@ public class ArenaController {
 
 
     private void detectObstacleCollisions(Robot robot) {
-        if (robot instanceof SensorRobot) {
-            avoidObstacles((SensorRobot) robot);
-        } else {
             handleNormalRobotObstacleInteraction(robot);
         }
-    }
 
-    private void avoidObstacles(SensorRobot sensorRobot) {
-        for (var node : arenaPane.getChildren()) {
-            if (node instanceof Obstacle) {
-                Obstacle obstacle = (Obstacle) node;
-                if (isCollidingWithObstacle(sensorRobot, obstacle)) {
-                    sensorRobot.avoidObstacle(obstacle);
-                }
-            }
-        }
-    }
+
 
     private void handleNormalRobotObstacleInteraction(Robot robot) {
         for (var node : arenaPane.getChildren()) {
@@ -378,9 +400,6 @@ public class ArenaController {
         });
     }
 
-
-
-
     @FXML
     public void fileAlert(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -398,11 +417,79 @@ public class ArenaController {
 
         if (result.isPresent()) {
             if (result.get() == saveButton) {
-                FileHandler.saveArena(arenaPane, robots, robotCount, obstacleCount);
+                try {
+                    saveArena("arena_config.ser");
+                    showInfoDialog("Success", "The arena has been successfully saved.");
+                } catch (IOException e) {
+                    showErrorDialog("Error", "Failed to save the arena: " + e.getMessage());
+                }
             } else if (result.get() == loadButton) {
-                FileHandler.loadArena(arenaPane, robots);
+                try {
+                    loadArena("arena_config.ser");
+                    showInfoDialog("Success", "The arena has been successfully loaded.");
+                } catch (IOException | ClassNotFoundException e) {
+                    showErrorDialog("Error", "Failed to load the arena: " + e.getMessage());
+                }
             }
         }
     }
+
+    private void saveArena(String filePath) throws IOException {
+        SimulationConfiguration config = new SimulationConfiguration();
+        config.setRobots(new ArrayList<>(robots)); // Save the current robots
+        config.setObstacles(getCurrentObstacles()); // Save the current obstacles
+        FileHandler.saveConfiguration(config, filePath);
+    }
+    private void loadArena(String filePath) throws IOException, ClassNotFoundException {
+        // Deserialize the configuration
+        SimulationConfiguration config = FileHandler.loadConfiguration(filePath);
+
+        // Clear current objects in the arena
+        arenaPane.getChildren().clear();
+        robots.clear();
+        robotCount = 0;
+        obstacleCount = 0;
+
+        // Reload obstacles
+        for (Obstacle obstacle : config.getObstacles()) {
+            obstacle.setLayoutX(obstacle.getX()); // Set the graphical X position
+            obstacle.setLayoutY(obstacle.getY()); // Set the graphical Y position
+            addObstacleToArena(obstacle); // Add to the arena's visual pane
+        }
+
+        // Reload robots
+        for (Robot robot : config.getRobots()) {
+            robot.setLayoutX(robot.getX()); // Set the graphical X position
+            robot.setLayoutY(robot.getY()); // Set the graphical Y position
+            addRobotToArena(robot); // Add to the arena's visual pane
+        }
+
+        // Update robot info display
+        updateRobotInfo();
+    }
+
+
+    private void showErrorDialog(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfoDialog(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private ArrayList getCurrentObstacles() {
+        // Return the current list of obstacles
+        return new ArrayList<>(obstacles);
+    }
+
+
 
 }

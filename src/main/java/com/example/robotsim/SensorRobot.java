@@ -5,9 +5,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
-public class SensorRobot extends Robot {
-    private transient Polygon frontSensor;
-    private double angle; // Angle in degrees to determine the robot's direction
+import java.io.Serializable;
+
+public class SensorRobot extends Robot implements Serializable {
+    private transient Polygon beamSensor;  // The beam sensor represented as a Polygon
+    private double angle;  // Angle in degrees to determine the robot's direction
     private boolean recentlyDetectedObstacle = false; // Flag to prevent repeated obstacle reactions
 
     public SensorRobot(String name, double x, double y, double size) {
@@ -21,73 +23,89 @@ public class SensorRobot extends Robot {
         imageView.setFitHeight(size);
         getChildren().add(imageView);
 
-        // Add a triangular front sensor pointing inward
-        frontSensor = new Polygon(
-                size / 2, size / 2,   // Apex of the triangle at the center
-                size / 4, size,       // Bottom-left corner
-                size * 3 / 4, size    // Bottom-right corner
+        // Add a beam sensor represented by a polygon (this is the beam the robot uses for detection)
+        beamSensor = new Polygon(
+                size / 2, 0,       // Apex of the beam pointing outward (at the front of the robot)
+                size, size / 4,    // Bottom-right corner of the beam
+                size, -size / 4    // Bottom-left corner of the beam
         );
-        frontSensor.setFill(Color.GREEN);
-        getChildren().add(frontSensor);
+        beamSensor.setFill(Color.GREEN);  // Initial color when no obstacle is detected
+        getChildren().add(beamSensor);
     }
 
     @Override
     public void updatePosition() {
-        // Move in the direction of the current angle
+        // Move in the direction of the current beam angle
         double radians = Math.toRadians(angle);
-        double dx = Math.cos(radians) * getSpeed();
-        double dy = Math.sin(radians) * getSpeed();
-        setLayoutX(getLayoutX() + dx);
-        setLayoutY(getLayoutY() + dy);
+        double dx = Math.cos(radians) * getSpeed();  // Movement in the x direction
+        double dy = Math.sin(radians) * getSpeed();  // Movement in the y direction
+        setLayoutX(getLayoutX() + dx);  // Update robot's x position
+        setLayoutY(getLayoutY() + dy);  // Update robot's y position
 
-        // Update rotation of the robot and sensor to match the angle
+        // Update rotation of the robot and beam sensor to match the angle
         setRotate(angle);
-        frontSensor.setRotate(angle);
+        beamSensor.setRotate(angle);
     }
 
-    public void avoidObstacle(Obstacle obstacle) {
-        if (frontSensor.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
-            if (!recentlyDetectedObstacle) {
-                frontSensor.setFill(Color.RED); // Obstacle detected
-                angle += 90; // Turn 90 degrees to avoid the obstacle
-                normalizeAngle();
-                recentlyDetectedObstacle = true;
+    // Detect if the beam sensor intersects with any obstacles or robots
+    public void detectObject(Object obj) {
+        if (obj instanceof Obstacle) {
+            Obstacle obstacle = (Obstacle) obj;
+            if (beamSensor.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
+                if (!recentlyDetectedObstacle) {
+                    beamSensor.setFill(Color.RED); // Obstacle detected
+                    avoidObstacle();  // Call method to avoid obstacle
+                    recentlyDetectedObstacle = true;
 
-                // Reset the detection flag after a short delay
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(500); // Delay to prevent constant detection
-                        recentlyDetectedObstacle = false;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
+                    // Reset the detection flag after a short delay
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(500); // Delay to prevent constant detection
+                            recentlyDetectedObstacle = false;
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                }
+            } else {
+                beamSensor.setFill(Color.GREEN); // No obstacle detected
             }
-        } else {
-            frontSensor.setFill(Color.GREEN); // No obstacle detected
+        }
+
+        // Detect other robots and steer away
+        if (obj instanceof Robot) {
+            Robot otherRobot = (Robot) obj;
+            if (this != otherRobot && beamSensor.getBoundsInParent().intersects(otherRobot.getBoundsInParent())) {
+                beamSensor.setFill(Color.YELLOW); // Robot detected
+                avoidRobot();  // Call method to avoid another robot
+            }
         }
     }
 
-    public void detectRobot(Robot otherRobot) {
-        if (this != otherRobot && frontSensor.getBoundsInParent().intersects(otherRobot.getBoundsInParent())) {
-            frontSensor.setFill(Color.YELLOW); // Robot detected
-            angle += 45; // Turn slightly to avoid the other robot
-            normalizeAngle();
-        }
+    private void avoidObstacle() {
+        // Obstacle avoidance logic: Turn 90 degrees to the left to avoid the obstacle
+        angle += 90;
+        normalizeAngle();  // Normalize the angle to ensure it remains within [0, 360)
+    }
+
+    private void avoidRobot() {
+        // Robot avoidance logic: Turn 45 degrees to the left to avoid another robot
+        angle -= 45;
+        normalizeAngle();  // Normalize the angle to ensure it remains within [0, 360)
     }
 
     @Override
     public void bounceHorizontally() {
-        angle = 180 - angle; // Reverse horizontal direction
+        angle = 180 - angle;  // Reverse horizontal direction
         normalizeAngle();
-        frontSensor.setFill(Color.PURPLE); // Indicate wall collision
+        beamSensor.setFill(Color.PURPLE);  // Indicate wall collision
     }
 
     @Override
     public void bounceVertically() {
-        angle = -angle; // Reverse vertical direction
+        angle = -angle;  // Reverse vertical direction
         normalizeAngle();
-        frontSensor.setFill(Color.PURPLE); // Indicate wall collision
+        beamSensor.setFill(Color.PURPLE);  // Indicate wall collision
     }
 
     private void normalizeAngle() {

@@ -18,13 +18,11 @@ public abstract class Robot extends Group implements Serializable {
     private transient ImageView imageView;
 
     private String name; // Add a serializable field for the name
-    private transient double direction; // Angle in degrees
-    private transient double speed;
+    private double direction; // Angle in degrees
+    private double speed;
     private final Random random = new Random();
     private double robotWidth = 50;
     private double robotHeight = 50;
-    private double x, y;
-
     //Constructor with parameters
 
     public Robot(String name, double x, double y, double size) {
@@ -84,6 +82,7 @@ public abstract class Robot extends Group implements Serializable {
     public void setDirection(double direction) {
         this.direction = direction % 360; // Ensure direction stays within 0-360 degrees
     }
+
 
 
 
