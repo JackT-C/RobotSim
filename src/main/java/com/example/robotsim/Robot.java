@@ -79,9 +79,6 @@ public abstract class Robot extends Group implements Serializable {
     public void setSpeed(double speed) {
         this.speed = Math.max(0, speed); // Ensure speed is non-negative
     }
-    public void setDirection(double direction) {
-        this.direction = direction % 360; // Ensure direction stays within 0-360 degrees
-    }
 
 
 
@@ -100,14 +97,6 @@ public abstract class Robot extends Group implements Serializable {
         setLayoutY(getLayoutY() + dy);
     }
 
-    public void changeDirection() {
-        // Adjust direction randomly within ±45 degrees
-        direction += random.nextDouble() * 90 - 45;
-
-        // Keep direction within [0, 360]
-        if (direction < 0) direction += 360;
-        if (direction >= 360) direction -= 360;
-    }
 
     public void bounceHorizontally() {
         // Reverse the horizontal component of the direction

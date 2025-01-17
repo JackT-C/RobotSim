@@ -32,7 +32,7 @@ public class ArenaController {
     private TextArea robotInfoArea;
 
     @FXML
-    private Pane arenaPane;
+    public static Pane arenaPane;
 
     @FXML
     private Button addRobotButton;
@@ -44,11 +44,13 @@ public class ArenaController {
         Robot sensorRobot = new SensorRobot("Sensor Robot", 1000, 300, 80);
         Robot userControlledRobot = new UserControlledRobot("User Controlled", 1000, 500, 100);
         Robot predatorRobot = new PredatorRobot("Predator Robot", 1000, 700, 70);
+        Robot WhiskerRobot = new WhiskerRobot("Whisker Robot", 1000, 500, 75);
 
         addRobotToArena(defaultRobot);
         addRobotToArena(sensorRobot);
         addRobotToArena(userControlledRobot);
         addRobotToArena(predatorRobot);
+        addRobotToArena(WhiskerRobot);
 
         // Add one obstacle of each type
         Obstacle lamp = new LampObstacle(550, 650, 75);
@@ -170,9 +172,8 @@ public class ArenaController {
                 // Add robot to the arena and the list of robots
                 arenaPane.getChildren().add(robot);
                 robots.add(robot);
-
+                addRobotToArena(robot);
                 animateRobot(robot);
-
                 robotCount++;
                 updateRobotInfo(); // Update TextArea with the new robot
             }
@@ -211,8 +212,36 @@ public class ArenaController {
 
 
     private void detectObstacleCollisions(Robot robot) {
-            handleNormalRobotObstacleInteraction(robot);
+        //Sensor Robot (Beam) Obstacle Handling
+        if (robot instanceof SensorRobot sensorRobot) {
+            for (Obstacle obstacle : obstacles) { // Iterate over all obstacles
+                Bounds beamBounds = sensorRobot.getBeam().getBoundsInLocal();
+                Bounds obstacleBounds = obstacle.getBoundsInLocal();
+                if (beamBounds.intersects(obstacleBounds)) {
+                    System.out.println("Intersection detected with obstacle: " + obstacle);
+                    sensorRobot.avoidObstacle(obstacle); // Trigger avoid logic
+                    return; // Exit after detecting one obstacle to avoid multiple triggers
+                }
+            }
         }
+        //Whisker Robot (Whiskers) Obstacle Handling
+        else if(robot instanceof WhiskerRobot whiskerRobot){
+            for (Obstacle obstacle : obstacles) { // Iterate over all obstacles
+                Bounds frontwhiskerBounds = whiskerRobot.getFrontWhisker().getBoundsInLocal();
+                Bounds leftwhiskerBounds = whiskerRobot.getLeftWhisker().getBoundsInLocal();
+                Bounds rightwhiskerBounds = whiskerRobot.getRightWhisker().getBoundsInLocal();
+                Bounds obstacleBounds = obstacle.getBoundsInLocal();
+                if (frontwhiskerBounds.intersects(obstacleBounds) || leftwhiskerBounds.intersects(obstacleBounds) || rightwhiskerBounds.intersects(obstacleBounds)) {
+                    System.out.println("Intersection detected with obstacle: " + obstacle);
+                    whiskerRobot.avoidObstacle(obstacle); // Trigger avoid logic
+                    return; // Exit after detecting one obstacle to avoid multiple triggers
+        }}}
+        else {
+            handleNormalRobotObstacleInteraction(robot); // Handle other robot interactions
+        }
+    }
+
+
 
 
 
@@ -395,6 +424,7 @@ public class ArenaController {
 
             if (obstacle != null) {
                 arenaPane.getChildren().add(obstacle);
+                addObstacleToArena(obstacle);
                 obstacleCount++;
             }
         });
@@ -489,6 +519,7 @@ public class ArenaController {
         // Return the current list of obstacles
         return new ArrayList<>(obstacles);
     }
+
 
 
 
