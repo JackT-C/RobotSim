@@ -16,16 +16,17 @@ import javafx.util.Duration;
 import javafx.util.Pair;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 
 public class ArenaController {
 
+    // List to hold the Timelines for all robots
+    private final List<Timeline> robotAnimations = new ArrayList<>();
+    private boolean isPlaying = false;
     private int robotCount = 0;
     private final List<Robot> robots = new ArrayList<>();
-    private final List<Obstacle> obstacles = new ArrayList<Obstacle>();
+    private final List<Obstacle> obstacles = new ArrayList<>();
     private int obstacleCount = 0;
 
     @FXML
@@ -34,8 +35,6 @@ public class ArenaController {
     @FXML
     private Pane arenaPane;
 
-    @FXML
-    private Button addRobotButton;
 
     @FXML
     public void initialize() {
@@ -69,7 +68,6 @@ public class ArenaController {
     private void addRobotToArena(Robot robot) {
         arenaPane.getChildren().add(robot);
         robots.add(robot);
-        animateRobot(robot);
         robotCount++;
     }
 
@@ -149,26 +147,16 @@ public class ArenaController {
             String selectedType = parts[1];
             double size = robotData.getValue();
 
-            Robot robot = null;
+            Robot robot = switch (selectedType) {
+                case "Default Robot" -> new DefaultRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                case "Sensor Robot" -> new SensorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                case "Predator Robot" -> new PredatorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                case "User Controlled" -> new UserControlledRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                case "Whisker Robot" -> new WhiskerRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                default -> null;
 
-            // Create the specific robot based on the selected type
-            switch (selectedType) {
-                case "Default Robot":
-                    robot = new DefaultRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
-                    break;
-                case "Sensor Robot":
-                    robot = new SensorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
-                    break;
-                case "Predator Robot":
-                    robot = new PredatorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
-                    break;
-                case "User Controlled":
-                    robot = new UserControlledRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
-                    break;
-                case "Whisker Robot":
-                    robot =  new WhiskerRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
-                    break;
-            }
+                // Create the specific robot based on the selected type
+            };
 
             if (robot != null) {
                 // Add robot to the arena and the list of robots
@@ -179,8 +167,27 @@ public class ArenaController {
         });
     }
 
+    // Play method to start all robot animations
+    public void play() {
+        if (!isPlaying) {
+            for (Robot robot : robots) {
+                animateRobot(robot); // Start each robot's animation
+            }
+            isPlaying = true;
+        }
+    }
 
+    // Pause method to stop all robot animations
+    public void pause() {
+        if (isPlaying) {
+            for (Timeline animation : robotAnimations) {
+                animation.pause(); // Pause each robot's animation
+            }
+            isPlaying = false;
+        }
+    }
 
+    // Modify animateRobot method to handle each robot's individual animation
     private void animateRobot(Robot robot) {
         Timeline animation = new Timeline(new KeyFrame(Duration.millis(50), event -> {
             robot.updatePosition();
@@ -205,8 +212,25 @@ public class ArenaController {
             updateRobotInfo();
         }));
 
-        animation.setCycleCount(Timeline.INDEFINITE);
-        animation.play();
+        animation.setCycleCount(Timeline.INDEFINITE); // Infinite loop
+        animation.play(); // Start the animation
+
+        robotAnimations.add(animation); // Add this animation to the list of all animations
+    }
+
+    public void NewArena() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText("New Arena Created :)");
+        // Clear all children (robots, obstacles, etc.) from the arena
+        arenaPane.getChildren().clear();
+
+        // Optionally, reset any relevant counters
+        robotCount = 0;
+        obstacleCount = 0;
+        robotInfoArea.toFront();
+
+        // Update or refresh the UI as necessary
+        updateRobotInfo();
     }
 
 
@@ -253,14 +277,9 @@ public class ArenaController {
     }
 
 
-
-
-
-
     private void handleNormalRobotObstacleInteraction(Robot robot) {
         for (var node : arenaPane.getChildren()) {
-            if (node instanceof Obstacle) {
-                Obstacle obstacle = (Obstacle) node;
+            if (node instanceof Obstacle obstacle) {
                 if (isCollidingWithObstacle(robot, obstacle)) {
                     obstacle.handleCollision(robot); // Polymorphic behavior handles specific logic
                 }
@@ -273,28 +292,6 @@ public class ArenaController {
         Bounds robotBounds = robot.getBoundsInParent();
         Bounds obstacleBounds = obstacle.getBoundsInParent();
         return robotBounds.intersects(obstacleBounds);
-    }
-
-    private void handleObstacleCollision(Robot robot, Obstacle obstacle) {
-        Bounds obstacleBounds = obstacle.getBoundsInParent();
-        Bounds robotBounds = robot.getBoundsInParent();
-
-        // Bounce robot in the opposite direction
-        if (robotBounds.getMaxX() > obstacleBounds.getMinX() && robotBounds.getMinX() < obstacleBounds.getMinX()) {
-            robot.bounceHorizontally();
-            robot.setLayoutX(robot.getLayoutX() - 5); // Push back slightly
-        } else if (robotBounds.getMinX() < obstacleBounds.getMaxX() && robotBounds.getMaxX() > obstacleBounds.getMaxX()) {
-            robot.bounceHorizontally();
-            robot.setLayoutX(robot.getLayoutX() + 5); // Push forward slightly
-        }
-
-        if (robotBounds.getMaxY() > obstacleBounds.getMinY() && robotBounds.getMinY() < obstacleBounds.getMinY()) {
-            robot.bounceVertically();
-            robot.setLayoutY(robot.getLayoutY() - 5); // Push back slightly
-        } else if (robotBounds.getMinY() < obstacleBounds.getMaxY() && robotBounds.getMaxY() > obstacleBounds.getMaxY()) {
-            robot.bounceVertically();
-            robot.setLayoutY(robot.getLayoutY() + 5); // Push forward slightly
-        }
     }
 
 
@@ -358,8 +355,7 @@ public class ArenaController {
 
     public void removeRobot(ActionEvent event) {
         for (int i = arenaPane.getChildren().size() - 1; i >= 0; i--) {
-            if (arenaPane.getChildren().get(i) instanceof Robot) {
-                Robot robotToRemove = (Robot) arenaPane.getChildren().get(i);
+            if (arenaPane.getChildren().get(i) instanceof Robot robotToRemove) {
                 arenaPane.getChildren().remove(robotToRemove);
                 robots.remove(robotToRemove);
                 robotCount--;
@@ -419,20 +415,14 @@ public class ArenaController {
             String selectedType = obstacleData.getKey();
             double size = obstacleData.getValue();
 
-            Obstacle obstacle = null;
+            Obstacle obstacle = switch (selectedType) {
+                case "Lamp" -> new LampObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
+                case "Rock" -> new RockObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
+                case "Lake" -> new LakeObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
+                default -> null;
 
-            // Create the specific obstacle based on the selected type
-            switch (selectedType) {
-                case "Lamp":
-                    obstacle = new LampObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
-                    break;
-                case "Rock":
-                    obstacle = new RockObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
-                    break;
-                case "Lake":
-                    obstacle = new LakeObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
-                    break;
-            }
+                // Create the specific obstacle based on the selected type
+            };
 
             if (obstacle != null) {
                 arenaPane.getChildren().add(obstacle);
@@ -444,6 +434,7 @@ public class ArenaController {
 
     @FXML
     public void fileAlert(ActionEvent event) {
+        
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("File Operation");
         alert.setHeaderText("Would you like to save or load the arena?");
@@ -460,14 +451,17 @@ public class ArenaController {
         if (result.isPresent()) {
             if (result.get() == saveButton) {
                 try {
-                    saveArena("arena_config.ser");
+                    // Call the saveArena method from the instance of FileHandler
+                    fileHandler.saveArena(robots, obstacles);
                     showInfoDialog("Success", "The arena has been successfully saved.");
                 } catch (IOException e) {
                     showErrorDialog("Error", "Failed to save the arena: " + e.getMessage());
                 }
             } else if (result.get() == loadButton) {
                 try {
-                    loadArena("arena_config.ser");
+                    // Call the loadArena method from the instance of FileHandler
+                    fileHandler.loadArena(robots, obstacles, arenaPane);
+                    updateRobotInfo(); // Update robot info after loading arena
                     showInfoDialog("Success", "The arena has been successfully loaded.");
                 } catch (IOException e) {
                     showErrorDialog("Error", "Failed to load the arena: " + e.getMessage());
@@ -475,99 +469,6 @@ public class ArenaController {
             }
         }
     }
-
-
-    private Robot createRobotFromType(String type, String name, double x, double y) {
-        switch (type) {
-            case "SensorRobot":
-                return new SensorRobot(name, x, y, 100);
-            case "DefaultRobot":
-                return new DefaultRobot(name, x, y, 100);
-            case "PredatorRobot":
-                return new PredatorRobot(name, x, y, 100);
-            case "UserControlledRobot":
-                return new UserControlledRobot(name, x, y, 100);
-            case "WhiskerRobot":  // Add support for WhiskerRobot
-                return new WhiskerRobot(name, x, y, 100);
-            default:
-                throw new IllegalArgumentException("Unknown robot type: " + type);
-        }
-    }
-
-
-    private Obstacle createObstacleFromType(String type, double x, double y, double size) {
-        switch (type) {
-            case "LampObstacle":
-                return new LampObstacle(x, y, size);
-            case "RockObstacle":
-                return new RockObstacle(x, y, size);
-            case "LakeObstacle":
-                return new LakeObstacle(x, y, size);
-            default:
-                throw new IllegalArgumentException("Unknown obstacle type: " + type);
-        }
-    }
-
-
-
-
-    private void saveArena(String filePath) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            // Save robots
-            writer.write("Robots\n");
-            for (Robot robot : robots) {
-                writer.write(robot.getClass().getSimpleName() + "," + robot.getName() + "," +
-                        robot.getLayoutX() + "," + robot.getLayoutY() + "\n");
-            }
-
-            // Save obstacles
-            writer.write("Obstacles\n");
-            for (Obstacle obstacle : obstacles) {
-                writer.write(obstacle.getClass().getSimpleName() + "," + obstacle.getLayoutX() + "," +
-                        obstacle.getLayoutY() + "," + obstacle.getSize() + "\n");
-            }
-        }
-    }
-    private void loadArena(String filePath) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            boolean loadingRobots = false;
-            boolean loadingObstacles = false;
-
-            arenaPane.getChildren().clear();
-            robots.clear();
-            obstacles.clear();
-
-            while ((line = reader.readLine()) != null) {
-                if (line.equals("Robots")) {
-                    loadingRobots = true;
-                    loadingObstacles = false;
-                } else if (line.equals("Obstacles")) {
-                    loadingObstacles = true;
-                    loadingRobots = false;
-                } else if (loadingRobots) {
-                    String[] parts = line.split(",");
-                    String type = parts[0];
-                    String name = parts[1];
-                    double x = Double.parseDouble(parts[2]);
-                    double y = Double.parseDouble(parts[3]);
-                    Robot robot = createRobotFromType(type, name, x, y);
-                    addRobotToArena(robot);
-                } else if (loadingObstacles) {
-                    String[] parts = line.split(",");
-                    String type = parts[0];
-                    double x = Double.parseDouble(parts[1]);
-                    double y = Double.parseDouble(parts[2]);
-                    double size = Double.parseDouble(parts[3]);
-                    Obstacle obstacle = createObstacleFromType(type, x, y, size);
-                    addObstacleToArena(obstacle);
-                }
-            }
-
-            updateRobotInfo(); // Update UI info about robots
-        }
-    }
-
 
 
     private void showErrorDialog(String title, String message) {
