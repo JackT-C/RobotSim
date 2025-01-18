@@ -11,6 +11,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 public class ApplicationMenuController {
@@ -44,40 +45,33 @@ public class ApplicationMenuController {
 
     @FXML
     private void showFileAlert() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("File Options");
-        alert.setHeaderText("Choose an option");
-        alert.setContentText("Do you want to select save folder or load the configuration?");
+        try {
+            // Ensure that ArenaController is available before interacting with it
+            SceneSwitcher.switchToArenaScene(mainPane.getScene());  // Switch to Arena scene
+            ArenaController arenaController = SceneSwitcher.getArenaController();  // Retrieve the ArenaController
 
-        ButtonType selectButton = new ButtonType("Select");
-        ButtonType loadButton = new ButtonType("Load");
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            if (arenaController != null) {
+                // Access ArenaController methods like getRobots(), getObstacles(), etc.
+                ArenaFileHandler fileHandler = new ArenaFileHandler(arenaController.getRobots(), arenaController.getObstacles(), arenaController.getArenaPane());
 
-        alert.getButtonTypes().setAll(selectButton, loadButton, cancelButton);
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent()) {
-            if (result.get() == selectButton) {
-                selectConfiguration();
-            } else if (result.get() == loadButton) {
-                loadConfiguration();
+                // Load the arena configuration
+                fileHandler.loadArena();
+            } else {
+                throw new NullPointerException("ArenaController is not initialized.");
             }
+
+        } catch (IOException e) {
+            // Show an error dialog if loading fails
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Load Error");
+            alert.setHeaderText("Failed to Load Arena");
+            alert.setContentText("An error occurred while loading the arena: " + e.getMessage());
+            alert.showAndWait();
         }
     }
 
-    private void selectConfiguration() {
 
-    }
 
-    private void loadConfiguration() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Load Configuration");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Configuration Files", "*.config"));
-        File file = fileChooser.showOpenDialog(mainPane.getScene().getWindow());
-        if (file != null) {
-            // Implement load logic here
-        }
-    }
 
     @FXML
     private void showHelp() {

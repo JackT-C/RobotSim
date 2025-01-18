@@ -72,12 +72,11 @@ public class ArenaController {
         robotCount++;
     }
 
-    // Helper method to add an obstacle to the arena
     private void addObstacleToArena(Obstacle obstacle) {
-        arenaPane.getChildren().add(obstacle);
-        obstacles.add(obstacle); // Ensure obstacles are added to the list
-        obstacleCount++;
+        arenaPane.getChildren().add(obstacle); // Add to the UI
+        obstacles.add(obstacle); // Add to the list
     }
+
 
 
     @FXML
@@ -487,4 +486,15 @@ public class ArenaController {
         alert.showAndWait();
     }
 
+    public List<Robot> getRobots() {
+        return robots;
+    }
+
+    public List<Obstacle> getObstacles() {
+        return obstacles;
+    }
+
+    public Pane getArenaPane() {
+        return arenaPane;
+    }
 }

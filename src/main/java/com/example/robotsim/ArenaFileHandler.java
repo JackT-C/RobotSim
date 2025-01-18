@@ -18,7 +18,6 @@ public class ArenaFileHandler {
         this.obstacles = obstacles;
         this.arenaPane = arenaPane;
     }
-
     public void saveArena() throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             // Save robots
@@ -27,6 +26,7 @@ public class ArenaFileHandler {
                 writer.write(robot.getClass().getSimpleName() + "," + robot.getName() + "," +
                         robot.getLayoutX() + "," + robot.getLayoutY() + "\n");
             }
+
 
             // Save obstacles
             writer.write("Obstacles\n");
@@ -102,5 +102,17 @@ public class ArenaFileHandler {
             case "LakeObstacle" -> new LakeObstacle(x, y, size);
             default -> throw new IllegalArgumentException("Unknown obstacle type: " + type);
         };
+    }
+
+    public List<Robot> getRobots() {
+        return robots;
+    }
+
+    public List<Obstacle> getObstacles() {
+        return obstacles;
+    }
+
+    public Pane getArenaPane() {
+        return arenaPane;
     }
 }
