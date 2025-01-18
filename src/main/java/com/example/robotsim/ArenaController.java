@@ -236,18 +236,20 @@ public class ArenaController {
 
     private void detectObstacleCollisions(Robot robot) {
         if (robot instanceof SensorRobot sensorRobot) {
-            // Sensor Robot (Beam) Obstacle Handling
+            // Sensor Robot (Cone Beam) Obstacle Handling
             for (Obstacle obstacle : obstacles) {
                 // Use getBoundsInParent to detect global bounds intersection
-                Bounds beamBounds = sensorRobot.getBeam().getBoundsInParent();
+                Bounds coneBounds = sensorRobot.getCone().getBoundsInParent();
                 Bounds obstacleBounds = obstacle.getBoundsInParent();
-                if (beamBounds.intersects(obstacleBounds)) {
-                    System.out.println("SensorRobot detected an obstacle: " + obstacle);
-                    sensorRobot.avoidObstacle(obstacle); // Trigger avoid logic
+
+                if (coneBounds.intersects(obstacleBounds)) {
+                    // Trigger the robot's obstacle-avoidance logic
+                    sensorRobot.avoidObstacle();
+
                     return; // Exit after detecting one obstacle
                 }
             }
-        } else if (robot instanceof WhiskerRobot whiskerRobot) {
+} else if (robot instanceof WhiskerRobot whiskerRobot) {
             // Whisker Robot (Whiskers) Obstacle Handling
             for (Obstacle obstacle : obstacles) {
                 Bounds frontWhiskerBounds = whiskerRobot.getFrontWhisker().getBoundsInParent();

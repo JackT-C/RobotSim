@@ -72,7 +72,12 @@ public abstract class Robot extends Group {
         return robotHeight;
     }
     public double getSpeed() {return speed;}
+    public double getDirection(){return direction;}
+    public void setDirection(double direction){
+        this.direction = direction;
+        }
     public void setSpeed(double speed) {
+
         this.speed = Math.max(0, speed); // Ensure speed is non-negative
     }
 

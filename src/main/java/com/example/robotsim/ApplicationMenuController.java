@@ -3,25 +3,15 @@ package com.example.robotsim;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
-import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
+
 
 public class ApplicationMenuController {
 
     @FXML
     private AnchorPane mainPane;
-    @FXML
-    private ImageView backgroundImage;
-    @FXML
-    private javafx.scene.control.Button FileButton, QuestionButton, startsimbutton, stopsimButton;
 
     private boolean isFullscreen = false;
 
@@ -69,7 +59,6 @@ public class ApplicationMenuController {
             alert.showAndWait();
         }
     }
-
 
 
 
