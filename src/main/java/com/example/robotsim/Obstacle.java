@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
-public abstract class Obstacle extends ImageView implements Serializable {
+public abstract class Obstacle extends ImageView {
     private String type;
     private double size;
-    private transient double x, y;
-    private transient ImageView imageView; // Make non-serializable fields transient
+    private double x, y;
+    private ImageView imageView; // Make non-serializable fields transient
     private double mouseX;
     private double mouseY;
     private String imagePath; // Stores the image path for reconstruction
@@ -60,8 +60,14 @@ public abstract class Obstacle extends ImageView implements Serializable {
         enableDrag();
     }
 
+
+
     public String getType() {
         return type;
+    }
+
+    public double getSize(){
+        return size;
     }
 
     public void setType(String type) {

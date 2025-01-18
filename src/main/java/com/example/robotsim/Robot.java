@@ -1,21 +1,17 @@
 package com.example.robotsim;
 
-import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+
 import java.util.Random;
 
-public abstract class Robot extends Group implements Serializable {
+public abstract class Robot extends Group {
 
-    private transient Text nameText;
-    private static final long serialVersionUID = 1L; // Make sure this matches across all classes that are serialized/deserialized.
-    private transient ImageView imageView;
+    private Text nameText;
+    private ImageView imageView;
 
     private String name; // Add a serializable field for the name
     private double direction; // Angle in degrees
@@ -125,40 +121,6 @@ public abstract class Robot extends Group implements Serializable {
             setLayoutY(event.getSceneY() - imageView.getFitHeight() / 2);
         });
     }
-
-    //FOR SAVE LOAD FUNCTIONALITY
-    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        // Default deserialization
-        ois.defaultReadObject();
-
-        // Reinitialize transient fields
-        Image robotImage = new Image(getClass().getResource("/Images/robot.png").toExternalForm());
-        imageView = new ImageView(robotImage);
-        imageView.setFitWidth(robotWidth);
-        imageView.setFitHeight(robotHeight);
-
-        // Restore nameText
-        nameText = new Text(name);
-        nameText.setStyle("-fx-font-size: 14; -fx-fill: black;");
-        nameText.setX(0);
-        nameText.setY(-10);
-
-        // Combine image and name
-        getChildren().clear();
-        getChildren().addAll(imageView, nameText);
-
-        // Restore random properties (like direction and speed) if needed
-        if (direction == 0) {
-            direction = new Random().nextDouble() * 360;
-        }
-        if (speed == 0) {
-            speed = 2 + new Random().nextDouble() * 2;
-        }
-
-        // Re-enable drag functionality
-        enableDrag();
-    }
-
 
 
 }

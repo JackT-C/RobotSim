@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +32,7 @@ public class ArenaController {
     private TextArea robotInfoArea;
 
     @FXML
-    public static Pane arenaPane;
+    private Pane arenaPane;
 
     @FXML
     private Button addRobotButton;
@@ -84,7 +84,7 @@ public class ArenaController {
     @FXML
     private void addRobot(ActionEvent event) {
         // List of robot types
-        List<String> robotOptions = Arrays.asList("Default Robot", "Sensor Robot", "User Controlled", "Predator Robot");
+        List<String> robotOptions = Arrays.asList("Default Robot", "Sensor Robot", "User Controlled", "Predator Robot", "Whisker Robot");
 
         // Create a dialog for adding a robot
         Dialog<Pair<String, Double>> dialog = new Dialog<>();
@@ -165,15 +165,14 @@ public class ArenaController {
                 case "User Controlled":
                     robot = new UserControlledRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                     break;
-
+                case "Whisker Robot":
+                    robot =  new WhiskerRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                    break;
             }
 
             if (robot != null) {
                 // Add robot to the arena and the list of robots
-                arenaPane.getChildren().add(robot);
-                robots.add(robot);
                 addRobotToArena(robot);
-                animateRobot(robot);
                 robotCount++;
                 updateRobotInfo(); // Update TextArea with the new robot
             }
@@ -212,34 +211,47 @@ public class ArenaController {
 
 
     private void detectObstacleCollisions(Robot robot) {
-        //Sensor Robot (Beam) Obstacle Handling
         if (robot instanceof SensorRobot sensorRobot) {
-            for (Obstacle obstacle : obstacles) { // Iterate over all obstacles
-                Bounds beamBounds = sensorRobot.getBeam().getBoundsInLocal();
-                Bounds obstacleBounds = obstacle.getBoundsInLocal();
+            // Sensor Robot (Beam) Obstacle Handling
+            for (Obstacle obstacle : obstacles) {
+                // Use getBoundsInParent to detect global bounds intersection
+                Bounds beamBounds = sensorRobot.getBeam().getBoundsInParent();
+                Bounds obstacleBounds = obstacle.getBoundsInParent();
                 if (beamBounds.intersects(obstacleBounds)) {
-                    System.out.println("Intersection detected with obstacle: " + obstacle);
+                    System.out.println("SensorRobot detected an obstacle: " + obstacle);
                     sensorRobot.avoidObstacle(obstacle); // Trigger avoid logic
-                    return; // Exit after detecting one obstacle to avoid multiple triggers
+                    return; // Exit after detecting one obstacle
                 }
             }
-        }
-        //Whisker Robot (Whiskers) Obstacle Handling
-        else if(robot instanceof WhiskerRobot whiskerRobot){
-            for (Obstacle obstacle : obstacles) { // Iterate over all obstacles
-                Bounds frontwhiskerBounds = whiskerRobot.getFrontWhisker().getBoundsInLocal();
-                Bounds leftwhiskerBounds = whiskerRobot.getLeftWhisker().getBoundsInLocal();
-                Bounds rightwhiskerBounds = whiskerRobot.getRightWhisker().getBoundsInLocal();
-                Bounds obstacleBounds = obstacle.getBoundsInLocal();
-                if (frontwhiskerBounds.intersects(obstacleBounds) || leftwhiskerBounds.intersects(obstacleBounds) || rightwhiskerBounds.intersects(obstacleBounds)) {
-                    System.out.println("Intersection detected with obstacle: " + obstacle);
-                    whiskerRobot.avoidObstacle(obstacle); // Trigger avoid logic
-                    return; // Exit after detecting one obstacle to avoid multiple triggers
-        }}}
-        else {
-            handleNormalRobotObstacleInteraction(robot); // Handle other robot interactions
+        } else if (robot instanceof WhiskerRobot whiskerRobot) {
+            // Whisker Robot (Whiskers) Obstacle Handling
+            for (Obstacle obstacle : obstacles) {
+                Bounds frontWhiskerBounds = whiskerRobot.getFrontWhisker().getBoundsInParent();
+                Bounds leftWhiskerBounds = whiskerRobot.getLeftWhisker().getBoundsInParent();
+                Bounds rightWhiskerBounds = whiskerRobot.getRightWhisker().getBoundsInParent();
+                Bounds obstacleBounds = obstacle.getBoundsInParent();
+
+                // Check if any of the whiskers intersect with the obstacle
+                if (frontWhiskerBounds.intersects(obstacleBounds)) {
+                    System.out.println("WhiskerRobot detected an obstacle with front whisker: " + obstacle);
+                    whiskerRobot.detectObstacle(obstacle);
+                    return;
+                } else if (leftWhiskerBounds.intersects(obstacleBounds)) {
+                    System.out.println("WhiskerRobot detected an obstacle with left whisker: " + obstacle);
+                    whiskerRobot.detectObstacle(obstacle);
+                    return;
+                } else if (rightWhiskerBounds.intersects(obstacleBounds)) {
+                    System.out.println("WhiskerRobot detected an obstacle with right whisker: " + obstacle);
+                    whiskerRobot.detectObstacle(obstacle);
+                    return;
+                }
+            }
+        } else {
+            // Default handling for other robot types
+            handleNormalRobotObstacleInteraction(robot);
         }
     }
+
 
 
 
@@ -457,46 +469,105 @@ public class ArenaController {
                 try {
                     loadArena("arena_config.ser");
                     showInfoDialog("Success", "The arena has been successfully loaded.");
-                } catch (IOException | ClassNotFoundException e) {
+                } catch (IOException e) {
                     showErrorDialog("Error", "Failed to load the arena: " + e.getMessage());
                 }
             }
         }
     }
 
+
+    private Robot createRobotFromType(String type, String name, double x, double y) {
+        switch (type) {
+            case "SensorRobot":
+                return new SensorRobot(name, x, y, 100);
+            case "DefaultRobot":
+                return new DefaultRobot(name, x, y, 100);
+            case "PredatorRobot":
+                return new PredatorRobot(name, x, y, 100);
+            case "UserControlledRobot":
+                return new UserControlledRobot(name, x, y, 100);
+            case "WhiskerRobot":  // Add support for WhiskerRobot
+                return new WhiskerRobot(name, x, y, 100);
+            default:
+                throw new IllegalArgumentException("Unknown robot type: " + type);
+        }
+    }
+
+
+    private Obstacle createObstacleFromType(String type, double x, double y, double size) {
+        switch (type) {
+            case "LampObstacle":
+                return new LampObstacle(x, y, size);
+            case "RockObstacle":
+                return new RockObstacle(x, y, size);
+            case "LakeObstacle":
+                return new LakeObstacle(x, y, size);
+            default:
+                throw new IllegalArgumentException("Unknown obstacle type: " + type);
+        }
+    }
+
+
+
+
     private void saveArena(String filePath) throws IOException {
-        SimulationConfiguration config = new SimulationConfiguration();
-        config.setRobots(new ArrayList<>(robots)); // Save the current robots
-        config.setObstacles(getCurrentObstacles()); // Save the current obstacles
-        FileHandler.saveConfiguration(config, filePath);
-    }
-    private void loadArena(String filePath) throws IOException, ClassNotFoundException {
-        // Deserialize the configuration
-        SimulationConfiguration config = FileHandler.loadConfiguration(filePath);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            // Save robots
+            writer.write("Robots\n");
+            for (Robot robot : robots) {
+                writer.write(robot.getClass().getSimpleName() + "," + robot.getName() + "," +
+                        robot.getLayoutX() + "," + robot.getLayoutY() + "\n");
+            }
 
-        // Clear current objects in the arena
-        arenaPane.getChildren().clear();
-        robots.clear();
-        robotCount = 0;
-        obstacleCount = 0;
-
-        // Reload obstacles
-        for (Obstacle obstacle : config.getObstacles()) {
-            obstacle.setLayoutX(obstacle.getX()); // Set the graphical X position
-            obstacle.setLayoutY(obstacle.getY()); // Set the graphical Y position
-            addObstacleToArena(obstacle); // Add to the arena's visual pane
+            // Save obstacles
+            writer.write("Obstacles\n");
+            for (Obstacle obstacle : obstacles) {
+                writer.write(obstacle.getClass().getSimpleName() + "," + obstacle.getLayoutX() + "," +
+                        obstacle.getLayoutY() + "," + obstacle.getSize() + "\n");
+            }
         }
-
-        // Reload robots
-        for (Robot robot : config.getRobots()) {
-            robot.setLayoutX(robot.getX()); // Set the graphical X position
-            robot.setLayoutY(robot.getY()); // Set the graphical Y position
-            addRobotToArena(robot); // Add to the arena's visual pane
-        }
-
-        // Update robot info display
-        updateRobotInfo();
     }
+    private void loadArena(String filePath) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            boolean loadingRobots = false;
+            boolean loadingObstacles = false;
+
+            arenaPane.getChildren().clear();
+            robots.clear();
+            obstacles.clear();
+
+            while ((line = reader.readLine()) != null) {
+                if (line.equals("Robots")) {
+                    loadingRobots = true;
+                    loadingObstacles = false;
+                } else if (line.equals("Obstacles")) {
+                    loadingObstacles = true;
+                    loadingRobots = false;
+                } else if (loadingRobots) {
+                    String[] parts = line.split(",");
+                    String type = parts[0];
+                    String name = parts[1];
+                    double x = Double.parseDouble(parts[2]);
+                    double y = Double.parseDouble(parts[3]);
+                    Robot robot = createRobotFromType(type, name, x, y);
+                    addRobotToArena(robot);
+                } else if (loadingObstacles) {
+                    String[] parts = line.split(",");
+                    String type = parts[0];
+                    double x = Double.parseDouble(parts[1]);
+                    double y = Double.parseDouble(parts[2]);
+                    double size = Double.parseDouble(parts[3]);
+                    Obstacle obstacle = createObstacleFromType(type, x, y, size);
+                    addObstacleToArena(obstacle);
+                }
+            }
+
+            updateRobotInfo(); // Update UI info about robots
+        }
+    }
+
 
 
     private void showErrorDialog(String title, String message) {
@@ -515,10 +586,6 @@ public class ArenaController {
         alert.showAndWait();
     }
 
-    private ArrayList getCurrentObstacles() {
-        // Return the current list of obstacles
-        return new ArrayList<>(obstacles);
-    }
 
 
 

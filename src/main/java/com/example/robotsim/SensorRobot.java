@@ -6,6 +6,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 
 public class SensorRobot extends Robot implements Serializable {
@@ -100,4 +102,16 @@ public class SensorRobot extends Robot implements Serializable {
     public Node getBeam() {
         return beam;
     }
+
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+        initializeBeam(); // Reinitialize the beam after deserialization
+    }
+
+    private void initializeBeam() {
+        beam = new Rectangle(0, 0, getRobotWidth() * 2, 5);
+        beam.setFill(Color.YELLOW);
+        getChildren().add(beam);
+    }
+
 }
