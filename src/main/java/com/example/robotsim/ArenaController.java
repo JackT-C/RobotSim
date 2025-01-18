@@ -243,7 +243,7 @@ public class ArenaController {
                 Bounds obstacleBounds = obstacle.getBoundsInParent();
 
                 if (coneBounds.intersects(obstacleBounds)) {
-                    // Trigger the robot's obstacle-avoidance logic
+                    // Trigger the robot's obstacle-avoidance logic for additional effects
                     sensorRobot.avoidObstacle();
 
                     return; // Exit after detecting one obstacle
