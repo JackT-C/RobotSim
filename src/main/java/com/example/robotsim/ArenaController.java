@@ -43,7 +43,7 @@ public class ArenaController {
         Robot sensorRobot = new SensorRobot("Sensor Robot", 1000, 300, 80);
         Robot userControlledRobot = new UserControlledRobot("User Controlled", 1000, 500, 100);
         Robot predatorRobot = new PredatorRobot("Predator Robot", 1000, 700, 70);
-        Robot WhiskerRobot = new WhiskerRobot("Whisker Robot", 1000, 500, 75);
+        Robot WhiskerRobot = new WhiskerRobot("Whisker Robot", 400, 500, 75);
 
         addRobotToArena(defaultRobot);
         addRobotToArena(sensorRobot);
@@ -433,8 +433,7 @@ public class ArenaController {
     }
 
     @FXML
-    public void fileAlert(ActionEvent event) {
-        
+    private void fileAlert(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("File Operation");
         alert.setHeaderText("Would you like to save or load the arena?");
@@ -449,19 +448,20 @@ public class ArenaController {
         Optional<ButtonType> result = alert.showAndWait();
 
         if (result.isPresent()) {
+            ArenaFileHandler fileHandler = new ArenaFileHandler(robots, obstacles, arenaPane);
             if (result.get() == saveButton) {
                 try {
-                    // Call the saveArena method from the instance of FileHandler
-                    fileHandler.saveArena(robots, obstacles);
+                    fileHandler.saveArena();
                     showInfoDialog("Success", "The arena has been successfully saved.");
                 } catch (IOException e) {
                     showErrorDialog("Error", "Failed to save the arena: " + e.getMessage());
                 }
             } else if (result.get() == loadButton) {
                 try {
-                    // Call the loadArena method from the instance of FileHandler
-                    fileHandler.loadArena(robots, obstacles, arenaPane);
-                    updateRobotInfo(); // Update robot info after loading arena
+                    // Reset Arena
+                    NewArena();
+                    fileHandler.loadArena();
+                    updateRobotInfo(); // Refresh robot information if needed
                     showInfoDialog("Success", "The arena has been successfully loaded.");
                 } catch (IOException e) {
                     showErrorDialog("Error", "Failed to load the arena: " + e.getMessage());
@@ -469,7 +469,6 @@ public class ArenaController {
             }
         }
     }
-
 
     private void showErrorDialog(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -486,9 +485,5 @@ public class ArenaController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
-
-
-
 
 }

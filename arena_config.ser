@@ -1,8 +1,0 @@
-Robots
-SensorRobot,Sensor Robot,375.4845609414513,439.3010172929031
-UserControlledRobot,User Controlled,1015.4031258158102,588.4217979429685
-DefaultRobot,Robot 3,566.835696565819,232.34392721677352
-Obstacles
-LampObstacle,0.0,0.0,75.0
-RockObstacle,0.0,0.0,75.0
-LakeObstacle,0.0,0.0,75.0

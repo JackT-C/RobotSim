@@ -11,10 +11,10 @@ public abstract class Obstacle extends ImageView {
     private String type;
     private double size;
     private double x, y;
-    private ImageView imageView; // Make non-serializable fields transient
+    private ImageView imageView;
     private double mouseX;
     private double mouseY;
-    private String imagePath; // Stores the image path for reconstruction
+    private String imagePath;
 
     public Obstacle(double x, double y, String imagePath, double size) {
         super(new Image(Obstacle.class.getResourceAsStream("/Images/" + imagePath))); // Load image
