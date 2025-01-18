@@ -31,8 +31,10 @@ public class ArenaFileHandler {
             // Save obstacles
             writer.write("Obstacles\n");
             for (Obstacle obstacle : obstacles) {
-                writer.write(obstacle.getClass().getSimpleName() + "," + obstacle.getLayoutX() + "," +
-                        obstacle.getLayoutY() + "," + obstacle.getSize() + "\n");
+                writer.write(obstacle.getClass().getSimpleName() + "," +
+                        obstacle.getX() + "," +
+                        obstacle.getY() + "," +
+                        obstacle.getSize() + "\n");
             }
         }
     }
@@ -76,7 +78,7 @@ public class ArenaFileHandler {
                     double size = Double.parseDouble(parts[3]);
                     Obstacle obstacle = createObstacleFromType(type, x, y, size);
                     obstacles.add(obstacle);
-                    arenaPane.getChildren().add(obstacle); // Add obstacle to the pane
+                    arenaPane.getChildren().add(obstacle);
                 }
             }
         }

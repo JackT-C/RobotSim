@@ -60,6 +60,7 @@ public class ArenaController {
         addObstacleToArena(rock);
         addObstacleToArena(lake);
 
+
         // Update robot info area
         updateRobotInfo();
     }
