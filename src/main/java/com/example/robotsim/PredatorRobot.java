@@ -4,12 +4,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.Node;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PredatorRobot extends Robot implements Serializable {
+public class PredatorRobot extends Robot {
 
     public PredatorRobot(String name, double x, double y, double size) {
         super(name, x, y, size);

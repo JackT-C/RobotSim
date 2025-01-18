@@ -235,49 +235,8 @@ public class ArenaController {
 
 
     private void detectObstacleCollisions(Robot robot) {
-        if (robot instanceof SensorRobot sensorRobot) {
-            // Sensor Robot (Cone Beam) Obstacle Handling
-            for (Obstacle obstacle : obstacles) {
-                // Use getBoundsInParent to detect global bounds intersection
-                Bounds coneBounds = sensorRobot.getCone().getBoundsInParent();
-                Bounds obstacleBounds = obstacle.getBoundsInParent();
-
-                if (coneBounds.intersects(obstacleBounds)) {
-                    // Trigger the robot's obstacle-avoidance logic for additional effects
-                    sensorRobot.avoidObstacle();
-
-                    return; // Exit after detecting one obstacle
-                }
-            }
-} else if (robot instanceof WhiskerRobot whiskerRobot) {
-            // Whisker Robot (Whiskers) Obstacle Handling
-            for (Obstacle obstacle : obstacles) {
-                Bounds frontWhiskerBounds = whiskerRobot.getFrontWhisker().getBoundsInParent();
-                Bounds leftWhiskerBounds = whiskerRobot.getLeftWhisker().getBoundsInParent();
-                Bounds rightWhiskerBounds = whiskerRobot.getRightWhisker().getBoundsInParent();
-                Bounds obstacleBounds = obstacle.getBoundsInParent();
-
-                // Check if any of the whiskers intersect with the obstacle
-                if (frontWhiskerBounds.intersects(obstacleBounds)) {
-                    System.out.println("WhiskerRobot detected an obstacle with front whisker: " + obstacle);
-                    whiskerRobot.detectObstacle(obstacle);
-                    return;
-                } else if (leftWhiskerBounds.intersects(obstacleBounds)) {
-                    System.out.println("WhiskerRobot detected an obstacle with left whisker: " + obstacle);
-                    whiskerRobot.detectObstacle(obstacle);
-                    return;
-                } else if (rightWhiskerBounds.intersects(obstacleBounds)) {
-                    System.out.println("WhiskerRobot detected an obstacle with right whisker: " + obstacle);
-                    whiskerRobot.detectObstacle(obstacle);
-                    return;
-                }
-            }
-        } else {
-            // Default handling for other robot types
-            handleNormalRobotObstacleInteraction(robot);
-        }
+        handleNormalRobotObstacleInteraction(robot);
     }
-
 
     private void handleNormalRobotObstacleInteraction(Robot robot) {
         for (var node : arenaPane.getChildren()) {
