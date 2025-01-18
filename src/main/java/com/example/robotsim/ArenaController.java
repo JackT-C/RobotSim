@@ -235,6 +235,12 @@ public class ArenaController {
 
 
     private void detectObstacleCollisions(Robot robot) {
+        // Exclude SensorRobot and WhiskerRobot from obstacle interaction handling
+        if (robot instanceof SensorRobot || robot instanceof WhiskerRobot) {
+            return; // Skip handling for these specific robot types
+        }
+
+        // Continue with the normal obstacle interaction for other robot types
         handleNormalRobotObstacleInteraction(robot);
     }
 
