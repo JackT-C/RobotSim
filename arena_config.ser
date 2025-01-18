@@ -1,9 +1,9 @@
 Robots
-DefaultRobot,Default Robot,1011.9349700316434,215.93493158316414
-SensorRobot,Sensor Robot,1170.8448654200547,300.0
-UserControlledRobot,User Controlled,968.1720884884162,602.2965214978249
-PredatorRobot,Predator Robot,985.7154580943188,809.92422247375
-WhiskerRobot,Whisker Robot,1119.7742337219036,500.0
+DefaultRobot,Default Robot,1035.9230599047492,36.45871124033535
+SensorRobot,Sensor Robot,1239.6273597863883,300.0
+UserControlledRobot,User Controlled,748.9080117577362,472.3838931773608
+PredatorRobot,Predator Robot,792.1520214326433,542.5430081396839
+WhiskerRobot,Whisker Robot,1152.082476702211,500.0
 Obstacles
 LampObstacle,0.0,0.0,75.0
 RockObstacle,0.0,0.0,75.0

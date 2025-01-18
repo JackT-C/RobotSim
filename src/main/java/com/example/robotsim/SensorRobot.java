@@ -27,12 +27,18 @@ public class SensorRobot extends Robot implements Serializable {
         getChildren().add(imageView);
 
         // Create the beam (light sensor) as a narrow rectangle
-        beam = new Rectangle(size / 4, size * 2); // Beam extends twice the robot size
+        beam = new Rectangle(size / 4, size * 2); // Beam width = 1/4 of robot, height = 2x robot size
         beam.setFill(Color.LIGHTBLUE);
         beam.setOpacity(0.5); // Slight transparency for visualization
-        beam.setTranslateX(size / 2 - beam.getWidth() / 2); // Position beam at the front
-        beam.setTranslateY(-beam.getHeight()); // Extend beam outward
+
+        // Position the beam directly on top of the robot
+        beam.setTranslateX((size / 2) - (beam.getWidth() / 2)); // Center the beam horizontally
+        beam.setTranslateY(-beam.getHeight()); // Position the beam above the robot
+
         getChildren().add(beam);
+
+        // Ensure the robot starts with the correct rotation
+        setRotate(angle);
     }
 
     @Override
@@ -47,7 +53,6 @@ public class SensorRobot extends Robot implements Serializable {
         // Update the rotation of the robot and the beam
         setRotate(angle);
         beam.setRotate(angle);
-
     }
 
     public void avoidObstacle(Obstacle obstacle) {
@@ -69,7 +74,6 @@ public class SensorRobot extends Robot implements Serializable {
             }).start();
         }
     }
-
 
     public void detectRobot(Robot otherRobot) {
         // Detect if another robot intersects the beam
@@ -102,16 +106,4 @@ public class SensorRobot extends Robot implements Serializable {
     public Node getBeam() {
         return beam;
     }
-
-    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        ois.defaultReadObject();
-        initializeBeam(); // Reinitialize the beam after deserialization
-    }
-
-    private void initializeBeam() {
-        beam = new Rectangle(0, 0, getRobotWidth() * 2, 5);
-        beam.setFill(Color.YELLOW);
-        getChildren().add(beam);
-    }
-
 }
