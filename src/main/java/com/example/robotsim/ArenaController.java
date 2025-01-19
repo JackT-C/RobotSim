@@ -246,20 +246,30 @@ public class ArenaController {
      * Displays an information alert to notify the user that a new arena has been created.
      */
     public void NewArena() {
+        // Display an information alert to notify the user about the new arena creation
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText("New Arena Created :)");
+        alert.show();
 
         // Clear all children (robots, obstacles, etc.) from the arena
         arenaPane.getChildren().clear();
 
-        // Optionally, reset any relevant counters
+        // reset any relevant counters
         robotCount = 0;
         obstacleCount = 0;
-        robotInfoArea.toFront();
+        robots.clear();
+        obstacles.clear();
+        // Ensure the robotInfoArea remains visible and in the top-right corner
+        if (!arenaPane.getChildren().contains(robotInfoArea)) {
+            arenaPane.getChildren().add(robotInfoArea); // Re-add the TextView if it's not already added
+        }
 
-        // Update or refresh the UI as necessary
+        robotInfoArea.toFront(); // Bring the robotInfoArea to the front
+
+        // Update the robot information to reflect the new arena state
         updateRobotInfo();
     }
+
 
     /**
      * Detects collisions between a robot and obstacles in the arena.
@@ -611,6 +621,9 @@ public class ArenaController {
                 try {
                     NewArena();
                     fileHandler.loadArena();
+                    if (!arenaPane.getChildren().contains(robotInfoArea)) {
+                        arenaPane.getChildren().add(robotInfoArea); // Re-add the TextView if it's not already added
+                    }
                     updateRobotInfo();
                     showInfoDialog("Success", "The arena has been successfully loaded.");
                 } catch (IOException e) {

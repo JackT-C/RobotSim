@@ -20,9 +20,9 @@ public class ArenaFileHandler {
     /**
      * Constructs an ArenaFileHandler instance with the specified robots, obstacles, and arena pane.
      *
-     * @param robots The list of robots in the arena.
-     * @param obstacles The list of obstacles in the arena.
-     * @param arenaPane The pane representing the arena.
+     * @param robots          The list of robots in the arena.
+     * @param obstacles       The list of obstacles in the arena.
+     * @param arenaPane       The pane representing the arena.
      * @param arenaController The ArenaController instance.
      */
     public ArenaFileHandler(List<Robot> robots, List<Obstacle> obstacles, Pane arenaPane, ArenaController arenaController) {
@@ -62,7 +62,7 @@ public class ArenaFileHandler {
      * Loads the arena configuration from a file and reconstructs the robots and obstacles.
      * The file format is expected to have a predefined structure for robots and obstacles.
      *
-     * @throws IOException If an I/O error occurs while loading the arena configuration.
+     * @throws IOException           If an I/O error occurs while loading the arena configuration.
      * @throws FileNotFoundException If the arena configuration file does not exist.
      */
     public void loadArena() throws IOException {
@@ -117,8 +117,8 @@ public class ArenaFileHandler {
      *
      * @param type The type of the robot (e.g., SensorRobot, DefaultRobot, etc.).
      * @param name The name of the robot.
-     * @param x The X coordinate of the robot.
-     * @param y The Y coordinate of the robot.
+     * @param x    The X coordinate of the robot.
+     * @param y    The Y coordinate of the robot.
      * @return The created robot instance.
      * @throws IllegalArgumentException If the robot type is unknown.
      */
@@ -137,8 +137,8 @@ public class ArenaFileHandler {
      * Creates an obstacle instance based on the type provided in the configuration.
      *
      * @param type The type of the obstacle (e.g., LampObstacle, RockObstacle, etc.).
-     * @param x The X coordinate of the obstacle.
-     * @param y The Y coordinate of the obstacle.
+     * @param x    The X coordinate of the obstacle.
+     * @param y    The Y coordinate of the obstacle.
      * @param size The size of the obstacle.
      * @return The created obstacle instance.
      * @throws IllegalArgumentException If the obstacle type is unknown.
@@ -159,23 +159,5 @@ public class ArenaFileHandler {
      */
     public List<Robot> getRobots() {
         return robots;
-    }
-
-    /**
-     * Returns the list of obstacles in the arena.
-     *
-     * @return A list of obstacles in the arena.
-     */
-    public List<Obstacle> getObstacles() {
-        return obstacles;
-    }
-
-    /**
-     * Returns the pane representing the arena.
-     *
-     * @return The pane representing the arena.
-     */
-    public Pane getArenaPane() {
-        return arenaPane;
     }
 }
