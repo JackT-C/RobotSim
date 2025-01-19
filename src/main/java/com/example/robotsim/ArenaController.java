@@ -613,9 +613,9 @@ public class ArenaController {
             if (result.get() == saveButton) {
                 try {
                     fileHandler.saveArena();
-                    showInfoDialog("Success", "The arena has been successfully saved.");
+                    showInfoDialog("The arena has been successfully saved.");
                 } catch (IOException e) {
-                    showErrorDialog("Error", "Failed to save the arena: " + e.getMessage());
+                    showErrorDialog("Failed to save the arena: " + e.getMessage());
                 }
             } else if (result.get() == loadButton) {
                 try {
@@ -625,9 +625,9 @@ public class ArenaController {
                         arenaPane.getChildren().add(robotInfoArea); // Re-add the TextView if it's not already added
                     }
                     updateRobotInfo();
-                    showInfoDialog("Success", "The arena has been successfully loaded.");
+                    showInfoDialog("The arena has been successfully loaded.");
                 } catch (IOException e) {
-                    showErrorDialog("Error", "Failed to load the arena: " + e.getMessage());
+                    showErrorDialog("Failed to load the arena: " + e.getMessage());
                 }
             }
         }
@@ -636,12 +636,11 @@ public class ArenaController {
     /**
      * Displays an error dialog with the specified title and message.
      *
-     * @param title The title of the error dialog.
      * @param message The error message to display.
      */
-    private void showErrorDialog(String title, String message) {
+    private void showErrorDialog(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
+        alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
@@ -650,12 +649,11 @@ public class ArenaController {
     /**
      * Displays an informational dialog with the specified title and message.
      *
-     * @param title The title of the information dialog.
      * @param message The informational message to display.
      */
-    private void showInfoDialog(String title, String message) {
+    private void showInfoDialog(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
+        alert.setTitle("Success");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();

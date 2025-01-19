@@ -16,12 +16,11 @@ public abstract class Robot extends Group {
     private Text nameText; // Text element to display the robot's name
     private ImageView imageView; // ImageView to display the robot's image
 
-    private String name; // Name of the robot
     private double direction; // Angle in degrees (0 to 360) representing the robot's direction
     private double speed; // Speed of the robot (distance moved per update)
     private final Random random = new Random(); // Random number generator for random speed and direction
-    private double robotWidth = 50; // Default width of the robot (modifiable)
-    private double robotHeight = 50; // Default height of the robot (modifiable)
+    private double robotWidth; // Default width of the robot (modifiable)
+    private double robotHeight; // Default height of the robot (modifiable)
 
     /**
      * Constructs a new Robot with the specified name, position (x, y), and size.
