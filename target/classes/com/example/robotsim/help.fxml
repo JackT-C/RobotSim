@@ -3,14 +3,40 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"  fx:id="mainpain" fx:controller="com.example.robotsim.HelpController">
+<AnchorPane fx:id="mainPane" prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.robotsim.HelpController">
     <children>
-        <!-- A label to display help text -->
-        <Label layoutX="20.0" layoutY="20.0" text="Welcome to the Help Page!" />
-        <Label layoutX="20.0" layoutY="60.0" text="Here you can find information about how to use the application." />
+        <!-- A label to display the title of the help page -->
+        <Label layoutX="858.0" layoutY="20.0" prefHeight="67.0" prefWidth="309.0" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Welcome to the Help Page!">
+         <font>
+            <Font size="96.0" />
+         </font></Label>
 
-        <!-- A button to go back to the main menu -->
-        <Button layoutX="20.0" layoutY="120.0" text="Back to Menu" onAction="#goBackToMenu" />
+        <!-- Instructions about the simulation -->
+        <Label layoutX="785.0" layoutY="86.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="This is a robot simulation with a variety of different robot types, and obstacle types. Here is a quick rundown on each type:" wrapText="true" />
+
+        <!-- Detailed Instructions -->
+        <Label layoutX="785.0" layoutY="131.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Robots:" />
+        <Label layoutX="787.0" layoutY="162.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Default Robots: Bumper robots that will bounce around the arena." wrapText="true" />
+        <Label layoutX="786.0" layoutY="208.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Sensor Robots: Robots with a cone sensor that will avoid obstacles and other robots." wrapText="true" />
+        <Label layoutX="778.0" layoutY="248.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Whisker Robots: Robots with 3 whisker sensors that try to avoid obstacles and robots." wrapText="true" />
+        <Label layoutX="786.0" layoutY="290.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• User Controlled Robots: Default robots with the ability to be controlled with WASD (click to start). Pause movement for other bots to move freely." wrapText="true" />
+        <Label layoutX="782.0" layoutY="351.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Predator Robots: Robots like black holes that consume anything in their path. Be careful!" wrapText="true" />
+
+        <!-- Instructions about obstacles -->
+        <Label layoutX="775.0" layoutY="402.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Obstacles:" />
+        <Label layoutX="775.0" layoutY="432.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Lamps: Fall over upon crashing into them." wrapText="true" />
+        <Label layoutX="775.0" layoutY="462.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Rocks: Stop the robot that crashes into them for a short period." wrapText="true" />
+        <Label layoutX="775.0" layoutY="492.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Lakes: Slow the robot down after trying to go in." wrapText="true" />
+
+        <!-- Additional Instructions -->
+        <Label layoutX="754.0" layoutY="536.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Additional Features:" />
+        <Label layoutX="785.0" layoutY="587.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Save/Load Configs: By default, a robot and obstacle of each type are provided." wrapText="true" />
+        <Label layoutX="780.0" layoutY="634.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Create a blank arena by pressing the plus button." wrapText="true" />
+        <Label layoutX="780.0" layoutY="664.0" maxWidth="400.0" style="-fx-font-size: 14px;" text="• Pause and Play Animation: Use the pause and play buttons to control the simulation." wrapText="true" />
+
+        <!-- A button that allows users to go back to the main menu -->
+        <Button layoutX="757.0" layoutY="736.0" onAction="#goBackToMenu" prefHeight="90.0" prefWidth="439.0" style="-fx-font-size: 14px; -fx-background-color: lightblue;" text="Back to Menu" />
     </children>
 </AnchorPane>

@@ -29,7 +29,6 @@ public class PredatorRobot extends Robot {
             if (parent != null && parent.getChildren().contains(object)) {
                 parent.getChildren().remove(object);
                 arenaController.removeObject(object); // Call ArenaController's remove method
-                System.out.println(getName() + " interacted with object");
             }
         }
     }
@@ -70,12 +69,10 @@ public class PredatorRobot extends Robot {
     @Override
     public void bounceHorizontally() {
         super.bounceHorizontally();
-        System.out.println(getName() + " bounced horizontally");
     }
 
     @Override
     public void bounceVertically() {
         super.bounceVertically();
-        System.out.println(getName() + " bounced vertically");
     }
 }

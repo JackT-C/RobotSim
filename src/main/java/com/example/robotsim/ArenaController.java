@@ -19,41 +19,46 @@ import javafx.util.Pair;
 import java.io.*;
 import java.util.*;
 
-
+/**
+ * The ArenaController class manages the arena in which robots and obstacles are placed.
+ * It provides functionality to add robots, control their animations, and manage obstacles.
+ */
 public class ArenaController {
 
     // List to hold the Timelines for all robots
     private final List<Timeline> robotAnimations = new ArrayList<>();
-    private boolean isPlaying = false;
-    private int robotCount = 0;
-    private final List<Robot> robots = new ArrayList<>();
-    private final List<Obstacle> obstacles = new ArrayList<>();
-    private int obstacleCount = 0;
-
-
-    @FXML
-    private TextArea robotInfoArea;
+    private boolean isPlaying = false;  // Flag to check if robots are currently playing
+    private int robotCount = 0;  // Counter for the number of robots
+    private final List<Robot> robots = new ArrayList<>();  // List to hold all robots
+    private final List<Obstacle> obstacles = new ArrayList<>();  // List to hold all obstacles
+    private int obstacleCount = 0;  // Counter for the number of obstacles
 
     @FXML
-    private Pane arenaPane;
+    private TextArea robotInfoArea;  // Text area to display information about robots
 
+    @FXML
+    private Pane arenaPane;  // Pane where robots and obstacles are displayed
 
+    /**
+     * Initializes the arena with default robots and obstacles.
+     * This method is called automatically when the controller is initialized.
+     */
     @FXML
     public void initialize() {
-        // Add one robot of each type
+        // Create and add one robot of each type to the arena
         Robot defaultRobot = new DefaultRobot("Default Robot", 1000, 100, 90);
         Robot sensorRobot = new SensorRobot("Sensor Robot", 1000, 300, 80);
         Robot userControlledRobot = new UserControlledRobot("User Controlled", 1000, 500, 100);
         Robot predatorRobot = new PredatorRobot("Predator Robot", 1000, 700, 70, this);
-        Robot WhiskerRobot = new WhiskerRobot("Whisker Robot", 400, 500, 75);
+        Robot whiskerRobot = new WhiskerRobot("Whisker Robot", 400, 500, 75);
 
         addRobotToArena(defaultRobot);
         addRobotToArena(sensorRobot);
         addRobotToArena(userControlledRobot);
         addRobotToArena(predatorRobot);
-        addRobotToArena(WhiskerRobot);
+        addRobotToArena(whiskerRobot);
 
-        // Add one obstacle of each type
+        // Create and add one obstacle of each type to the arena
         Obstacle lamp = new LampObstacle(550, 650, 75);
         Obstacle rock = new RockObstacle(250, 250, 75);
         Obstacle lake = new LakeObstacle(750, 150, 75);
@@ -62,47 +67,54 @@ public class ArenaController {
         addObstacleToArena(rock);
         addObstacleToArena(lake);
 
-
-        // Update robot info area
+        // Update the robot info area with the current robot details
         updateRobotInfo();
     }
 
-    // Helper method to add a robot to the arena and the list
+    /**
+     * Helper method to add a robot to the arena and the robot list.
+     * @param robot The robot to add.
+     */
     private void addRobotToArena(Robot robot) {
-        arenaPane.getChildren().add(robot);
-        robots.add(robot);
-        robotCount++;
+        arenaPane.getChildren().add(robot);  // Add the robot to the display
+        robots.add(robot);  // Add the robot to the list
+        robotCount++;  // Increment the robot count
     }
 
+    /**
+     * Helper method to add an obstacle to the arena and the obstacle list.
+     * @param obstacle The obstacle to add.
+     */
     private void addObstacleToArena(Obstacle obstacle) {
-        arenaPane.getChildren().add(obstacle); // Add to the UI
-        obstacles.add(obstacle); // Add to the list
+        arenaPane.getChildren().add(obstacle);  // Add the obstacle to the display
+        obstacles.add(obstacle);  // Add the obstacle to the list
     }
 
-
-
+    /**
+     * Displays a dialog to allow the user to add a robot to the arena.
+     * The user can customize the robot's name, type, and size.
+     * @param event The event triggered when the user attempts to add a robot.
+     */
     @FXML
     private void addRobot(ActionEvent event) {
-        // List of robot types
+        // List of robot types to choose from
         List<String> robotOptions = Arrays.asList("Default Robot", "Sensor Robot", "User Controlled", "Predator Robot", "Whisker Robot");
 
-        // Create a dialog for adding a robot
+        // Create a dialog to customize the robot
         Dialog<Pair<String, Double>> dialog = new Dialog<>();
         dialog.setTitle("Add Robot");
         dialog.setHeaderText("Customize your robot:");
 
-        // Robot Name
+        // Create and configure fields for the robot's name, type, and size
         Label nameLabel = new Label("Robot Name:");
         TextField nameField = new TextField();
         nameField.setPromptText("Enter robot name");
 
-        // Robot Type
         Label typeLabel = new Label("Robot Type:");
         ChoiceBox<String> typeChoiceBox = new ChoiceBox<>();
         typeChoiceBox.getItems().addAll(robotOptions);
-        typeChoiceBox.setValue(robotOptions.get(0)); // Default selection
+        typeChoiceBox.setValue(robotOptions.get(0)); // Default to the first option
 
-        // Robot Size
         Label sizeLabel = new Label("Robot Size:");
         Slider sizeSlider = new Slider(30, 150, 50); // Min size: 30, Max size: 150, Default: 50
         sizeSlider.setShowTickMarks(true);
@@ -110,7 +122,7 @@ public class ArenaController {
         sizeSlider.setMajorTickUnit(20);
         sizeSlider.setBlockIncrement(5);
 
-        // Layout for the dialog content
+        // Layout for the dialog's content
         GridPane gridPane = new GridPane();
         gridPane.setHgap(10);
         gridPane.setVgap(10);
@@ -123,20 +135,20 @@ public class ArenaController {
 
         dialog.getDialogPane().setContent(gridPane);
 
-        // Add OK and Cancel buttons
+        // Add OK and Cancel buttons to the dialog
         ButtonType okButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
 
-        // Convert the result to a pair of robot type and size, including name
+        // Convert the result to a pair containing the robot's name, type, and size
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == okButtonType) {
                 String name = nameField.getText().trim();
                 if (name.isEmpty()) {
-                    name = "Robot " + (robotCount + 1); // Default name if user leaves it blank
+                    name = "Robot " + (robotCount + 1);  // Default name if left blank
                 }
                 String type = typeChoiceBox.getValue();
                 Double size = sizeSlider.getValue();
-                return new Pair<>(name + "|" + type, size);
+                return new Pair<>(name + "|" + type, size);  // Return the customized robot data
             }
             return null;
         });
@@ -149,6 +161,7 @@ public class ArenaController {
             String selectedType = parts[1];
             double size = robotData.getValue();
 
+            // Create the specific robot based on the selected type
             Robot robot = switch (selectedType) {
                 case "Default Robot" -> new DefaultRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                 case "Sensor Robot" -> new SensorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
@@ -156,40 +169,48 @@ public class ArenaController {
                 case "User Controlled" -> new UserControlledRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                 case "Whisker Robot" -> new WhiskerRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                 default -> null;
-
-                // Create the specific robot based on the selected type
             };
 
             if (robot != null) {
-                // Add robot to the arena and the list of robots
-                addRobotToArena(robot);
-                robotCount++;
-                updateRobotInfo(); // Update TextArea with the new robot
+                addRobotToArena(robot);  // Add the newly created robot to the arena
+                robotCount++;  // Increment robot count
+                updateRobotInfo();  // Update robot info display
             }
         });
     }
 
-    // Play method to start all robot animations
+    /**
+     * Starts the animations for all robots in the arena.
+     * This method is called when the play button is clicked.
+     */
     public void play() {
         if (!isPlaying) {
             for (Robot robot : robots) {
-                animateRobot(robot); // Start each robot's animation
+                animateRobot(robot);  // Start each robot's animation
             }
-            isPlaying = true;
+            isPlaying = true;  // Set the playing flag to true
         }
     }
 
-    // Pause method to stop all robot animations
+    /**
+     * Pauses the animations for all robots in the arena.
+     * This method is called when the pause button is clicked.
+     */
     public void pause() {
         if (isPlaying) {
             for (Timeline animation : robotAnimations) {
-                animation.pause(); // Pause each robot's animation
+                animation.pause();  // Pause each robot's animation
             }
-            isPlaying = false;
+            isPlaying = false;  // Set the playing flag to false
         }
     }
 
-    // Modify animateRobot method to handle each robot's individual animation
+    /**
+     * Animates a robot in the arena, handling its movement and interactions with boundaries, obstacles, and other elements.
+     * The robot's position is updated periodically, and its collisions with walls, the text area, and obstacles are handled.
+     *
+     * @param robot the robot to animate
+     */
     private void animateRobot(Robot robot) {
         Timeline animation = new Timeline(new KeyFrame(Duration.millis(50), event -> {
             robot.updatePosition();
@@ -220,9 +241,14 @@ public class ArenaController {
         robotAnimations.add(animation); // Add this animation to the list of all animations
     }
 
+    /**
+     * Creates a new arena by clearing all current robots and obstacles, and resets necessary counters.
+     * Displays an information alert to notify the user that a new arena has been created.
+     */
     public void NewArena() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText("New Arena Created :)");
+
         // Clear all children (robots, obstacles, etc.) from the arena
         arenaPane.getChildren().clear();
 
@@ -235,7 +261,12 @@ public class ArenaController {
         updateRobotInfo();
     }
 
-
+    /**
+     * Detects collisions between a robot and obstacles in the arena.
+     * SensorRobot and WhiskerRobot are excluded from obstacle collision handling.
+     *
+     * @param robot the robot to check for obstacle collisions
+     */
     private void detectObstacleCollisions(Robot robot) {
         // Exclude SensorRobot and WhiskerRobot from obstacle interaction handling
         if (robot instanceof SensorRobot || robot instanceof WhiskerRobot) {
@@ -246,6 +277,12 @@ public class ArenaController {
         handleNormalRobotObstacleInteraction(robot);
     }
 
+    /**
+     * Handles the interaction of a robot with obstacles in the arena.
+     * This is used for normal robots (not SensorRobot or WhiskerRobot).
+     *
+     * @param robot the robot to check for obstacle interactions
+     */
     private void handleNormalRobotObstacleInteraction(Robot robot) {
         for (var node : arenaPane.getChildren()) {
             if (node instanceof Obstacle obstacle) {
@@ -256,20 +293,37 @@ public class ArenaController {
         }
     }
 
-
+    /**
+     * Checks if a robot is colliding with a given obstacle.
+     *
+     * @param robot the robot to check
+     * @param obstacle the obstacle to check for collision with
+     * @return true if the robot is colliding with the obstacle, false otherwise
+     */
     private boolean isCollidingWithObstacle(Robot robot, Obstacle obstacle) {
         Bounds robotBounds = robot.getBoundsInParent();
         Bounds obstacleBounds = obstacle.getBoundsInParent();
         return robotBounds.intersects(obstacleBounds);
     }
 
-
+    /**
+     * Checks if a robot is colliding with the text area that displays robot information.
+     *
+     * @param robot the robot to check for collision with the text area
+     * @return true if the robot is colliding with the text area, false otherwise
+     */
     private boolean isCollidingWithTextArea(Robot robot) {
         Bounds textAreaBounds = robotInfoArea.getBoundsInParent();
         Bounds robotBounds = robot.getBoundsInParent();
         return robotBounds.intersects(textAreaBounds);
     }
 
+    /**
+     * Handles the behavior when a robot collides with the text area, making it bounce off the text area.
+     * Adjusts the robot's position slightly after collision.
+     *
+     * @param robot the robot to adjust after collision with the text area
+     */
     private void bounceOffTextArea(Robot robot) {
         Bounds textAreaBounds = robotInfoArea.getBoundsInParent();
         Bounds robotBounds = robot.getBoundsInParent();
@@ -289,7 +343,10 @@ public class ArenaController {
         }
     }
 
-
+    /**
+     * Updates the robot information displayed in the robotInfoArea TextArea.
+     * This includes the name, X and Y positions, and the robot's size.
+     */
     private void updateRobotInfo() {
         robotInfoArea.clear();
         for (Robot robot : robots) {
@@ -302,6 +359,12 @@ public class ArenaController {
         }
     }
 
+    /**
+     * Handles the action to return to the main menu.
+     * Loads the ApplicationMenu.fxml scene and sets it as the current scene.
+     *
+     * @param event the action event that triggers this method
+     */
     public void goBackToMenu(ActionEvent event) {
         try {
             Parent menuRoot = FXMLLoader.load(getClass().getResource("ApplicationMenu.fxml"));
@@ -312,7 +375,13 @@ public class ArenaController {
         }
     }
 
-
+    /**
+     * Removes an obstacle from the arena.
+     * Displays a prompt for the user to select which obstacle to remove by name or number.
+     * If the input is invalid, an error message is shown.
+     *
+     * @param event the action event that triggers this method
+     */
     public void removeObstacle(ActionEvent event) {
         // Create a list of obstacles currently in the arena
         StringBuilder obstacleList = new StringBuilder("Current obstacles:\n");
@@ -379,10 +448,15 @@ public class ArenaController {
             }
         }
     }
-
-
+    /**
+     * Removes a robot from the arena and the list of robots.
+     * If no robots are available, displays an informational alert.
+     * Prompts the user to select a robot by either index or name.
+     * If the robot is found, removes it from the arena and updates the robot info.
+     *
+     * @param event The action event that triggered the removal.
+     */
     public void removeRobot(ActionEvent event) {
-        // Check if there are any robots in the list
         if (robots.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("No Robots Available");
@@ -392,13 +466,11 @@ public class ArenaController {
             return;
         }
 
-        // Create a dialog to display the list of robots
         StringBuilder robotList = new StringBuilder("Current robots:\n");
         for (int i = 0; i < robots.size(); i++) {
             robotList.append(i + 1).append(". ").append(robots.get(i).getName()).append("\n");
         }
 
-        // Prompt the user to enter the number or name of the robot to remove
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Select Robot to Remove");
         dialog.setHeaderText(null);
@@ -411,13 +483,11 @@ public class ArenaController {
             Robot robotToRemove = null;
 
             try {
-                // Try parsing the input as a robot index (1-based)
                 int robotIndex = Integer.parseInt(userInput.trim()) - 1;
                 if (robotIndex >= 0 && robotIndex < robots.size()) {
                     robotToRemove = robots.get(robotIndex);
                 }
             } catch (NumberFormatException e) {
-                // If the input is not a number, try to find the robot by name
                 for (Robot robot : robots) {
                     if (robot.getName().equalsIgnoreCase(userInput.trim())) {
                         robotToRemove = robot;
@@ -426,7 +496,6 @@ public class ArenaController {
                 }
             }
 
-            // If a robot was found, remove it
             if (robotToRemove != null) {
                 arenaPane.getChildren().remove(robotToRemove);
                 robots.remove(robotToRemove);
@@ -442,24 +511,27 @@ public class ArenaController {
         }
     }
 
-
+    /**
+     * Adds a new obstacle to the arena based on user input.
+     * Prompts the user to choose the obstacle type and size.
+     * Depending on the selection, creates a new obstacle and adds it to the arena.
+     *
+     * @param event The action event that triggered the addition.
+     */
     public void addObstacle(ActionEvent event) {
-        // List of obstacle types
         List<String> obstacleOptions = Arrays.asList("Lamp", "Rock", "Lake");
 
-        // Create a dialog for adding an obstacle
         Dialog<Pair<String, Double>> dialog = new Dialog<>();
         dialog.setTitle("Add Obstacle");
         dialog.setHeaderText("Choose an obstacle type and size:");
 
-        // Set the dialog content
         Label typeLabel = new Label("Obstacle Type:");
         ChoiceBox<String> typeChoiceBox = new ChoiceBox<>();
         typeChoiceBox.getItems().addAll(obstacleOptions);
-        typeChoiceBox.setValue(obstacleOptions.get(0)); // Default selection
+        typeChoiceBox.setValue(obstacleOptions.get(0));
 
         Label sizeLabel = new Label("Obstacle Size:");
-        Slider sizeSlider = new Slider(50, 200, 100); // Min size: 50, Max size: 200, Default: 100
+        Slider sizeSlider = new Slider(50, 200, 100);
         sizeSlider.setShowTickMarks(true);
         sizeSlider.setShowTickLabels(true);
         sizeSlider.setMajorTickUnit(20);
@@ -475,11 +547,9 @@ public class ArenaController {
 
         dialog.getDialogPane().setContent(gridPane);
 
-        // Add OK and Cancel buttons
         ButtonType okButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
 
-        // Convert the result to a pair of obstacle type and size
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == okButtonType) {
                 return new Pair<>(typeChoiceBox.getValue(), sizeSlider.getValue());
@@ -487,7 +557,6 @@ public class ArenaController {
             return null;
         });
 
-        // Show the dialog and process the result
         Optional<Pair<String, Double>> result = dialog.showAndWait();
         result.ifPresent(obstacleData -> {
             String selectedType = obstacleData.getKey();
@@ -498,8 +567,6 @@ public class ArenaController {
                 case "Rock" -> new RockObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
                 case "Lake" -> new LakeObstacle(100 + obstacleCount * 50, 100 + obstacleCount * 50, size);
                 default -> null;
-
-                // Create the specific obstacle based on the selected type
             };
 
             if (obstacle != null) {
@@ -510,6 +577,12 @@ public class ArenaController {
         });
     }
 
+    /**
+     * Displays an alert with options to save or load the arena state.
+     * Depending on the user's choice, either saves or loads the arena's robots and obstacles.
+     *
+     * @param event The action event that triggered the file alert.
+     */
     @FXML
     private void fileAlert(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -536,10 +609,9 @@ public class ArenaController {
                 }
             } else if (result.get() == loadButton) {
                 try {
-                    // Reset Arena
                     NewArena();
                     fileHandler.loadArena();
-                    updateRobotInfo(); // Refresh robot information if needed
+                    updateRobotInfo();
                     showInfoDialog("Success", "The arena has been successfully loaded.");
                 } catch (IOException e) {
                     showErrorDialog("Error", "Failed to load the arena: " + e.getMessage());
@@ -548,6 +620,12 @@ public class ArenaController {
         }
     }
 
+    /**
+     * Displays an error dialog with the specified title and message.
+     *
+     * @param title The title of the error dialog.
+     * @param message The error message to display.
+     */
     private void showErrorDialog(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -556,6 +634,12 @@ public class ArenaController {
         alert.showAndWait();
     }
 
+    /**
+     * Displays an informational dialog with the specified title and message.
+     *
+     * @param title The title of the information dialog.
+     * @param message The informational message to display.
+     */
     private void showInfoDialog(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -564,19 +648,38 @@ public class ArenaController {
         alert.showAndWait();
     }
 
+    /**
+     * Gets the list of robots in the arena.
+     *
+     * @return A list of robots in the arena.
+     */
     public List<Robot> getRobots() {
         return robots;
     }
 
+    /**
+     * Gets the list of obstacles in the arena.
+     *
+     * @return A list of obstacles in the arena.
+     */
     public List<Obstacle> getObstacles() {
         return obstacles;
     }
 
+    /**
+     * Gets the pane representing the arena.
+     *
+     * @return The pane representing the arena.
+     */
     public Pane getArenaPane() {
         return arenaPane;
     }
 
-    // Example method to remove an object from both arena and lists
+    /**
+     * Removes an object (either robot or obstacle) from both the arena and the respective list.
+     *
+     * @param object The object to remove (either a robot or an obstacle).
+     */
     public void removeObject(Node object) {
         if (object instanceof Robot) {
             removeRobot((Robot) object);
@@ -584,18 +687,24 @@ public class ArenaController {
             removeObstacle((Obstacle) object);
         }
     }
-    // Remove a robot from the arena and list
+
+    /**
+     * Removes a robot from the arena and the list of robots.
+     *
+     * @param robot The robot to remove.
+     */
     public void removeRobot(Robot robot) {
         arenaPane.getChildren().remove(robot);
         robots.remove(robot);
     }
 
-    // Remove an obstacle from the arena and list
+    /**
+     * Removes an obstacle from the arena and the list of obstacles.
+     *
+     * @param obstacle The obstacle to remove.
+     */
     public void removeObstacle(Obstacle obstacle) {
         arenaPane.getChildren().remove(obstacle);
         obstacles.remove(obstacle);
     }
-
-
-
 }
