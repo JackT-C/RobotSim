@@ -8,8 +8,18 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Controller for the Help section of the application.
+ * Handles user interactions such as navigating back to the main menu.
+ */
 public class HelpController {
 
+    /**
+     * Handles the action when the "Back to Menu" button is clicked.
+     * It loads the main menu FXML and sets it as the current scene.
+     *
+     * @param event The ActionEvent triggered by the button click.
+     */
     public void goBackToMenu(ActionEvent event) {
         try {
             // Load the main menu FXML file
