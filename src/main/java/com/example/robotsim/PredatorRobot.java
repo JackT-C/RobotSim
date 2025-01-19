@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PredatorRobot extends Robot {
+    private ArenaController arenaController;
 
-    public PredatorRobot(String name, double x, double y, double size) {
+    public PredatorRobot(String name, double x, double y, double size, ArenaController arenaController) {
         super(name, x, y, size);
+        this.arenaController = arenaController;  // Set the arenaController here
 
         // Remove the default image from the parent class and add a new one
         getChildren().clear();
@@ -22,19 +24,12 @@ public class PredatorRobot extends Robot {
 
     // Detect interaction with another robot or obstacle
     public void interactWithObject(Node object) {
-        if (object instanceof Robot) {
-            Robot otherRobot = (Robot) object;
+        if (object instanceof Robot || object instanceof Obstacle) {
             Pane parent = (Pane) getParent();
-            if (parent != null && parent.getChildren().contains(otherRobot)) {
-                parent.getChildren().remove(otherRobot);
-                System.out.println(getName() + " has eaten " + otherRobot.getName());
-            }
-        } else if (object instanceof Obstacle) {
-            Obstacle obstacle = (Obstacle) object;
-            Pane parent = (Pane) getParent();
-            if (parent != null && parent.getChildren().contains(obstacle)) {
-                parent.getChildren().remove(obstacle);
-                System.out.println(getName() + " has destroyed an obstacle");
+            if (parent != null && parent.getChildren().contains(object)) {
+                parent.getChildren().remove(object);
+                arenaController.removeObject(object); // Call ArenaController's remove method
+                System.out.println(getName() + " interacted with object");
             }
         }
     }

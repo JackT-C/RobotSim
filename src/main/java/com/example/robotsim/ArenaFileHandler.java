@@ -9,11 +9,12 @@ import java.util.List;
 public class ArenaFileHandler {
 
     private final String filePath = "arena_config.txt"; // Predefined file path
+    private ArenaController arenaController;  // Add ArenaController reference
     private List<Robot> robots;
     private List<Obstacle> obstacles;
     private Pane arenaPane;
 
-    public ArenaFileHandler(List<Robot> robots, List<Obstacle> obstacles, Pane arenaPane) {
+    public ArenaFileHandler(List<Robot> robots, List<Obstacle> obstacles, Pane arenaPane, ArenaController arenaController) {
         this.robots = robots;
         this.obstacles = obstacles;
         this.arenaPane = arenaPane;
@@ -88,7 +89,7 @@ public class ArenaFileHandler {
         return switch (type) {
             case "SensorRobot" -> new SensorRobot(name, x, y, 100);
             case "DefaultRobot" -> new DefaultRobot(name, x, y, 100);
-            case "PredatorRobot" -> new PredatorRobot(name, x, y, 100);
+            case "PredatorRobot" -> new PredatorRobot(name, x, y, 100, arenaController);
             case "UserControlledRobot" -> new UserControlledRobot(name, x, y, 100);
             case "WhiskerRobot" -> new WhiskerRobot(name, x, y, 100);
             default -> throw new IllegalArgumentException("Unknown robot type: " + type);

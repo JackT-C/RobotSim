@@ -26,7 +26,7 @@
 
             // Create the cone beam
             coneBeam = new Polygon();
-            coneBeam.setFill(Color.LIGHTBLUE);
+            coneBeam.setFill(Color.GREEN);
             coneBeam.setOpacity(0.7);
 
             // Set cone shape
@@ -61,6 +61,7 @@
                     if (child != this && child != coneBeam && isInteractable(child)) {
                         if (getBoundsInParent().intersects(child.getBoundsInParent())) {
                             // Object detected, steer away
+                            coneBeam.setFill(Color.RED);
                             avoidObstacle();
                             break; // Avoid processing multiple objects simultaneously
                         }

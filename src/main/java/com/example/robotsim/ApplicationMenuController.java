@@ -42,7 +42,7 @@ public class ApplicationMenuController {
 
             if (arenaController != null) {
                 // Access ArenaController methods like getRobots(), getObstacles(), etc.
-                ArenaFileHandler fileHandler = new ArenaFileHandler(arenaController.getRobots(), arenaController.getObstacles(), arenaController.getArenaPane());
+                ArenaFileHandler fileHandler = new ArenaFileHandler(arenaController.getRobots(), arenaController.getObstacles(), arenaController.getArenaPane(),arenaController );
 
                 // Load the arena configuration
                 fileHandler.loadArena();

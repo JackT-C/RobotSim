@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -29,6 +30,7 @@ public class ArenaController {
     private final List<Obstacle> obstacles = new ArrayList<>();
     private int obstacleCount = 0;
 
+
     @FXML
     private TextArea robotInfoArea;
 
@@ -42,7 +44,7 @@ public class ArenaController {
         Robot defaultRobot = new DefaultRobot("Default Robot", 1000, 100, 90);
         Robot sensorRobot = new SensorRobot("Sensor Robot", 1000, 300, 80);
         Robot userControlledRobot = new UserControlledRobot("User Controlled", 1000, 500, 100);
-        Robot predatorRobot = new PredatorRobot("Predator Robot", 1000, 700, 70);
+        Robot predatorRobot = new PredatorRobot("Predator Robot", 1000, 700, 70, this);
         Robot WhiskerRobot = new WhiskerRobot("Whisker Robot", 400, 500, 75);
 
         addRobotToArena(defaultRobot);
@@ -150,7 +152,7 @@ public class ArenaController {
             Robot robot = switch (selectedType) {
                 case "Default Robot" -> new DefaultRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                 case "Sensor Robot" -> new SensorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
-                case "Predator Robot" -> new PredatorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
+                case "Predator Robot" -> new PredatorRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size, this);
                 case "User Controlled" -> new UserControlledRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                 case "Whisker Robot" -> new WhiskerRobot(name, 100 + robotCount * 50, 100 + robotCount * 50, size);
                 default -> null;
@@ -310,27 +312,136 @@ public class ArenaController {
         }
     }
 
+
     public void removeObstacle(ActionEvent event) {
-        for (int i = arenaPane.getChildren().size() - 1; i >= 0; i--) {
-            if (arenaPane.getChildren().get(i) instanceof Obstacle) {
-                arenaPane.getChildren().remove(i);
+        // Create a list of obstacles currently in the arena
+        StringBuilder obstacleList = new StringBuilder("Current obstacles:\n");
+        int index = 1;  // Obstacle numbering starts from 1 for user-friendliness
+        for (int i = 0; i < arenaPane.getChildren().size(); i++) {
+            if (arenaPane.getChildren().get(i) instanceof Obstacle obstacle) {
+                obstacleList.append(index).append(". ").append(obstacle.getName()).append("\n");
+                index++;
+            }
+        }
+
+        // Check if there are any obstacles to remove
+        if (index == 1) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("No Obstacles Available");
+            alert.setHeaderText(null);
+            alert.setContentText("There are no obstacles to remove.");
+            alert.showAndWait();
+            return;
+        }
+
+        // Prompt the user to select an obstacle by number or name
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Select Obstacle to Remove");
+        dialog.setHeaderText(null);
+        dialog.setContentText(obstacleList.toString() + "\nEnter the name of the obstacle to remove:");
+
+        Optional<String> result = dialog.showAndWait();
+
+        if (result.isPresent()) {
+            String userInput = result.get();
+            Obstacle obstacleToRemove = null;
+
+            try {
+                // Try parsing the input as an obstacle index (1-based)
+                int obstacleIndex = Integer.parseInt(userInput.trim()) - 1;
+                if (obstacleIndex >= 0 && obstacleIndex < arenaPane.getChildren().size()) {
+                    if (arenaPane.getChildren().get(obstacleIndex) instanceof Obstacle selectedObstacle) {
+                        obstacleToRemove = selectedObstacle;
+                    }
+                }
+            } catch (NumberFormatException e) {
+                // If the input is not a number, try to find the obstacle by name
+                for (int i = 0; i < arenaPane.getChildren().size(); i++) {
+                    if (arenaPane.getChildren().get(i) instanceof Obstacle obstacle) {
+                        if (obstacle.getName().equalsIgnoreCase(userInput.trim())) {
+                            obstacleToRemove = obstacle;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // If an obstacle was found, remove it
+            if (obstacleToRemove != null) {
+                arenaPane.getChildren().remove(obstacleToRemove);
                 obstacleCount--;
-                break;
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Obstacle Not Found");
+                alert.setHeaderText(null);
+                alert.setContentText("No obstacle found with the name or number '" + userInput + "'.");
+                alert.showAndWait();
             }
         }
     }
 
+
     public void removeRobot(ActionEvent event) {
-        for (int i = arenaPane.getChildren().size() - 1; i >= 0; i--) {
-            if (arenaPane.getChildren().get(i) instanceof Robot robotToRemove) {
+        // Check if there are any robots in the list
+        if (robots.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("No Robots Available");
+            alert.setHeaderText(null);
+            alert.setContentText("There are no robots to remove.");
+            alert.showAndWait();
+            return;
+        }
+
+        // Create a dialog to display the list of robots
+        StringBuilder robotList = new StringBuilder("Current robots:\n");
+        for (int i = 0; i < robots.size(); i++) {
+            robotList.append(i + 1).append(". ").append(robots.get(i).getName()).append("\n");
+        }
+
+        // Prompt the user to enter the number or name of the robot to remove
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Select Robot to Remove");
+        dialog.setHeaderText(null);
+        dialog.setContentText(robotList.toString() + "\nEnter the number or name of the robot to remove:");
+
+        Optional<String> result = dialog.showAndWait();
+
+        if (result.isPresent()) {
+            String userInput = result.get();
+            Robot robotToRemove = null;
+
+            try {
+                // Try parsing the input as a robot index (1-based)
+                int robotIndex = Integer.parseInt(userInput.trim()) - 1;
+                if (robotIndex >= 0 && robotIndex < robots.size()) {
+                    robotToRemove = robots.get(robotIndex);
+                }
+            } catch (NumberFormatException e) {
+                // If the input is not a number, try to find the robot by name
+                for (Robot robot : robots) {
+                    if (robot.getName().equalsIgnoreCase(userInput.trim())) {
+                        robotToRemove = robot;
+                        break;
+                    }
+                }
+            }
+
+            // If a robot was found, remove it
+            if (robotToRemove != null) {
                 arenaPane.getChildren().remove(robotToRemove);
                 robots.remove(robotToRemove);
                 robotCount--;
                 updateRobotInfo();
-                break;
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Robot Not Found");
+                alert.setHeaderText(null);
+                alert.setContentText("No robot found with the name or number '" + userInput + "'.");
+                alert.showAndWait();
             }
         }
     }
+
 
     public void addObstacle(ActionEvent event) {
         // List of obstacle types
@@ -415,7 +526,7 @@ public class ArenaController {
         Optional<ButtonType> result = alert.showAndWait();
 
         if (result.isPresent()) {
-            ArenaFileHandler fileHandler = new ArenaFileHandler(robots, obstacles, arenaPane);
+            ArenaFileHandler fileHandler = new ArenaFileHandler(robots, obstacles, arenaPane, this);
             if (result.get() == saveButton) {
                 try {
                     fileHandler.saveArena();
@@ -464,4 +575,27 @@ public class ArenaController {
     public Pane getArenaPane() {
         return arenaPane;
     }
+
+    // Example method to remove an object from both arena and lists
+    public void removeObject(Node object) {
+        if (object instanceof Robot) {
+            removeRobot((Robot) object);
+        } else if (object instanceof Obstacle) {
+            removeObstacle((Obstacle) object);
+        }
+    }
+    // Remove a robot from the arena and list
+    public void removeRobot(Robot robot) {
+        arenaPane.getChildren().remove(robot);
+        robots.remove(robot);
+    }
+
+    // Remove an obstacle from the arena and list
+    public void removeObstacle(Obstacle obstacle) {
+        arenaPane.getChildren().remove(obstacle);
+        obstacles.remove(obstacle);
+    }
+
+
+
 }

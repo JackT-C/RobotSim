@@ -3,10 +3,6 @@ package com.example.robotsim;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-
 public abstract class Obstacle extends ImageView {
     private String type;
     private double size;
@@ -51,6 +47,8 @@ public abstract class Obstacle extends ImageView {
     public void setType(String type) {
         this.type = type;
     }
+
+    public String getName(){return type;}
 
     // Placeholder for handling collisions (to be overridden by subclasses)
     public abstract void handleCollision(Robot robot);
