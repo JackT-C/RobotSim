@@ -5,16 +5,17 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Line;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WhiskerRobot extends Robot {
-    private Polygon frontWhisker;
-    private Polygon leftWhisker;
-    private Polygon rightWhisker;
+    private transient Line frontLine;
+    private transient Line leftLine;
+    private transient Line rightLine;
     private boolean recentlyDetectedObstacle = false;
+    private double offset = 35;  // Offset to move lines to the right
 
     public WhiskerRobot(String name, double x, double y, double size) {
         super(name, x, y, size);
@@ -24,122 +25,104 @@ public class WhiskerRobot extends Robot {
         ImageView imageView = new ImageView(new Image(WhiskerRobot.class.getResource("/Images/whiskerRobot.png").toExternalForm()));
         imageView.setFitWidth(getRobotWidth());
         imageView.setFitHeight(getRobotHeight());
-        getChildren().add(imageView);
+        getChildren().add(imageView); // Add robot image first
 
-        // Initialize whiskers
-        initializeWhiskers(size);
+        // Create the three fixed sensor lines (whiskers)
+        createSensorLines();
+
+        // Add lines to the robot, after the robot image to ensure they are on top
+        getChildren().addAll(frontLine, leftLine, rightLine);
     }
 
-    private void initializeWhiskers(double size) {
-        double whiskerLength = size * 1.5;
+    private void createSensorLines() {
+        double whiskerLength = getRobotHeight() * 1.0;  // Shortened length of the sensor lines
 
-        // Front whisker
-        frontWhisker = new Polygon(0.0, 0.0, -whiskerLength / 4, -whiskerLength, whiskerLength / 4, -whiskerLength);
-        frontWhisker.setFill(Color.LIGHTBLUE);
-        frontWhisker.setOpacity(0.7);
+        // Front line (facing the robot's direction)
+        frontLine = new Line(0, 0, 0, -whiskerLength);
+        frontLine.setStroke(Color.BLACK);
+        frontLine.setStrokeWidth(2);
 
-        // Left whisker
-        leftWhisker = new Polygon(0.0, 0.0, -whiskerLength, -whiskerLength / 4, -whiskerLength, whiskerLength / 4);
-        leftWhisker.setFill(Color.GREEN);
-        leftWhisker.setOpacity(0.7);
+        // Left line (facing 90 degrees left of the robot's direction)
+        leftLine = new Line(0, 0, 0, -whiskerLength);
+        leftLine.setStroke(Color.BLACK);
+        leftLine.setStrokeWidth(2);
 
-        // Right whisker
-        rightWhisker = new Polygon(0.0, 0.0, whiskerLength, -whiskerLength / 4, whiskerLength, whiskerLength / 4);
-        rightWhisker.setFill(Color.GREEN);
-        rightWhisker.setOpacity(0.7);
+        // Right line (facing 90 degrees right of the robot's direction)
+        rightLine = new Line(0, 0, 0, -whiskerLength);
+        rightLine.setStroke(Color.BLACK);
+        rightLine.setStrokeWidth(2);
 
-        // Add whiskers to the robot
-        getChildren().addAll(frontWhisker, leftWhisker, rightWhisker);
-
-        // Align whiskers with the robot's direction
-        updateWhiskerPositions();
+        // Position the lines initially with the rightward offset
+        updateSensorPositions();
     }
 
     @Override
     public void updatePosition() {
         super.updatePosition();
 
-        // Update whisker positions
-        updateWhiskerPositions();
+        // Update the whisker positions to ensure they remain attached
+        updateSensorPositions();
 
-        // Check for collisions in the scene
+        // Check for collisions in the scene using the sensor lines
         Pane parent = (Pane) getParent();
         if (parent != null) {
             List<Node> childrenCopy = new ArrayList<>(parent.getChildren());
 
             for (Node child : childrenCopy) {
-                if (child != this && child != frontWhisker && child != leftWhisker && child != rightWhisker && isInteractable(child)) {
+                if (child != this && child != frontLine && child != leftLine && child != rightLine && isInteractable(child)) {
                     if (getBoundsInParent().intersects(child.getBoundsInParent())) {
-                        // Object detected, steer away based on whisker intersection
-                        detectAndAvoidObstacle(child);
-                        break;
+                        // Object detected by any of the sensor lines
+                        avoidObstacle();
+                        break; // Avoid processing multiple objects at once
                     }
                 }
             }
         }
     }
 
-    private void updateWhiskerPositions() {
-        // Convert robot's direction to radians
-        double radians = Math.toRadians(getDirection());
+    private void updateSensorPositions() {
+        // Update the positions of the lines relative to the robot's center, with an offset to the right
+        double robotWidth = getRobotWidth();
+        double robotHeight = getRobotHeight();
 
-        // Offset whiskers relative to robot's position
-        double offsetX = Math.cos(radians) * (getRobotHeight() * 0.5);
-        double offsetY = Math.sin(radians) * (getRobotHeight() * 0.5);
+        // Apply offset to move lines to the right
+        double offsetX = offset; // Rightward offset for all lines
 
-        // Align whiskers with the robot's current direction
-        frontWhisker.setTranslateX(offsetX);
-        frontWhisker.setTranslateY(offsetY);
-        frontWhisker.setRotate(getDirection() - 90);
+        // Set the positions and rotations for the lines
+        frontLine.setStartX(offsetX);  // Add offset to the X coordinate
+        frontLine.setStartY(0);
+        frontLine.setEndX(offsetX);    // Keep X constant
+        frontLine.setEndY(-robotHeight); // Extend line in front of robot
 
-        leftWhisker.setTranslateX(offsetX);
-        leftWhisker.setTranslateY(offsetY);
-        leftWhisker.setRotate(getDirection() - 135);
+        leftLine.setStartX(offsetX);  // Add offset to the X coordinate
+        leftLine.setStartY(0);
+        leftLine.setEndX(offsetX - robotWidth); // Left line extending to the left
+        leftLine.setEndY(0); // Y remains the same
 
-        rightWhisker.setTranslateX(offsetX);
-        rightWhisker.setTranslateY(offsetY);
-        rightWhisker.setRotate(getDirection() - 45);
+        rightLine.setStartX(offsetX);  // Add offset to the X coordinate
+        rightLine.setStartY(0);
+        rightLine.setEndX(offsetX + robotWidth); // Right line extending to the right
+        rightLine.setEndY(0); // Y remains the same
     }
 
     private boolean isInteractable(Node node) {
-        // Define criteria for interactable objects (can be customized)
-        return node != null && !(node instanceof WhiskerRobot); // Example: ignore other WhiskerRobots
+        // Define which objects the robot can interact with
+        return node != null && !(node instanceof WhiskerRobot); // Prevent interactions with itself
     }
 
-    private void detectAndAvoidObstacle(Node obstacle) {
+    public void avoidObstacle() {
         if (!recentlyDetectedObstacle) {
-            // Determine which whisker detects the obstacle
-            if (frontWhisker.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
-                avoidObstacle("front");
-            } else if (leftWhisker.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
-                avoidObstacle("left");
-            } else if (rightWhisker.getBoundsInParent().intersects(obstacle.getBoundsInParent())) {
-                avoidObstacle("right");
-            }
-        }
-    }
+            // Visual indication of detection by the sensor lines
+            frontLine.setStroke(Color.RED);
+            leftLine.setStroke(Color.RED);
+            rightLine.setStroke(Color.RED);
 
-    private void avoidObstacle(String direction) {
-        if (!recentlyDetectedObstacle) {
-            switch (direction) {
-                case "front" -> {
-                    frontWhisker.setFill(Color.RED);
-                    setDirection(getDirection() + 90); // Turn right
-                }
-                case "left" -> {
-                    leftWhisker.setFill(Color.RED);
-                    setDirection(getDirection() + 45); // Turn slightly right
-                }
-                case "right" -> {
-                    rightWhisker.setFill(Color.RED);
-                    setDirection(getDirection() - 45); // Turn slightly left
-                }
-            }
+            // Adjust direction to steer away from the obstacle
+            setDirection(getDirection() + Math.random() * 110 - 45); // Randomized steering within ±45 degrees
 
-            normalizeAngle();
             recentlyDetectedObstacle = true;
 
-            // Reset whisker colors and detection flag after a delay
+            // Reset obstacle detection after a short delay
             resetDetectionAfterDelay();
         }
     }
@@ -147,19 +130,14 @@ public class WhiskerRobot extends Robot {
     private void resetDetectionAfterDelay() {
         new Thread(() -> {
             try {
-                Thread.sleep(1000);
-                frontWhisker.setFill(Color.LIGHTBLUE);
-                leftWhisker.setFill(Color.GREEN);
-                rightWhisker.setFill(Color.GREEN);
+                Thread.sleep(1000); // Wait for 1 second before resetting
+                frontLine.setStroke(Color.BLACK); // Reset line color
+                leftLine.setStroke(Color.BLACK); // Reset left line color
+                rightLine.setStroke(Color.BLACK); // Reset right line color
                 recentlyDetectedObstacle = false;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }).start();
-    }
-
-    // Normalize the angle to stay within the [0, 360) range
-    private void normalizeAngle() {
-        setDirection((getDirection() + 360) % 360);
     }
 }

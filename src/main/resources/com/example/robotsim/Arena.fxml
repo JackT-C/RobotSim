@@ -46,7 +46,7 @@
       <Button fx:id="fileIcon" layoutX="15.0" layoutY="190.0" mnemonicParsing="false" onAction="#fileAlert" opacity="0.0" prefHeight="139.0" prefWidth="117.0" />
      <AnchorPane fx:id="arenaPane" layoutX="143.0" layoutY="152.0" prefHeight="888.0" prefWidth="1700.0">
          <children>
-            <TextArea fx:id="robotInfoArea" layoutX="1570.0" layoutY="6.0" prefHeight="926.0" prefWidth="186.0" />
+            <TextArea fx:id="robotInfoArea" layoutX="1431.0" prefHeight="445.0" prefWidth="339.0" />
          </children></AnchorPane>
    </children>
 </AnchorPane>
